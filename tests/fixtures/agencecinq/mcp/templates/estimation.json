@@ -1,0 +1,29 @@
+{
+    "$schema": "https://raw.githubusercontent.com/agencecinq/cinq-wp-mcp/main/schemas/mcp.schema.json#/definitions/template",
+    "title": "Estimation",
+    "description": "Interactive estimator. The estimator itself has no block: it needs a new theme layout.",
+    "postType": "page",
+    "source": "https://www.figma.com/design/I3CVH0brbAgCqXzuLpks34/?node-id=70-3943",
+    "sections": [
+        {
+            "label": "Section · Page Hero",
+            "block": "page_hero",
+            "status": "exact"
+        },
+        {
+            "label": "Section · Estimator",
+            "status": "missing",
+            "note": "No estimator layout in the theme, and no form block either since `form` was removed. It needs a new ACF layout."
+        },
+        {
+            "label": "Section · Pricing Rules",
+            "block": "pricing_rules",
+            "status": "exact"
+        },
+        {
+            "label": "Section · Closing CTA",
+            "block": "call_to_action",
+            "status": "exact"
+        }
+    ]
+}

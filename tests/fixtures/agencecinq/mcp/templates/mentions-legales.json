@@ -1,0 +1,20 @@
+{
+    "$schema": "https://raw.githubusercontent.com/agencecinq/cinq-wp-mcp/main/schemas/mcp.schema.json#/definitions/template",
+    "title": "Legal Notice",
+    "description": "Legal page: a hero and a long body of prose.",
+    "postType": "page",
+    "source": "https://www.figma.com/design/I3CVH0brbAgCqXzuLpks34/?node-id=70-9530",
+    "sections": [
+        {
+            "label": "Section · Page Hero",
+            "block": "page_hero",
+            "status": "exact"
+        },
+        {
+            "label": "Section · Editorial Prose",
+            "block": "editorial_prose",
+            "status": "exact",
+            "note": "The whole legal text goes in the `text` wysiwyg field."
+        }
+    ]
+}

@@ -1,0 +1,19 @@
+{
+    "$schema": "https://raw.githubusercontent.com/agencecinq/cinq-wp-mcp/main/schemas/mcp.schema.json#/definitions/template",
+    "title": "Contact",
+    "description": "Contact page: a form next to the agency details.",
+    "postType": "page",
+    "source": "https://www.figma.com/design/I3CVH0brbAgCqXzuLpks34/?node-id=70-9401",
+    "sections": [
+        {
+            "label": "Section · Page Hero",
+            "block": "page_hero",
+            "status": "exact"
+        },
+        {
+            "label": "Section · Form + Info",
+            "status": "missing",
+            "note": "The `contact` and `form` blocks were removed from the theme. Neither the form nor the agency details can be placed from the block stack; both need a new ACF layout."
+        }
+    ]
+}

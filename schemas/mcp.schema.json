@@ -1,0 +1,146 @@
+{
+	"$schema": "http://json-schema.org/draft-07/schema#",
+	"$id": "https://raw.githubusercontent.com/agencecinq/cinq-wp-mcp/main/schemas/mcp.schema.json",
+	"title": "CINQ WP MCP site configuration",
+	"description": "mcp.json at the root of a theme, read by the CINQ WP MCP plugin. Everything is optional except version: the plugin discovers the block zones from ACF on its own, this file only enriches what it finds.",
+	"type": "object",
+	"additionalProperties": false,
+	"required": [ "version" ],
+	"properties": {
+		"$schema": { "type": "string" },
+		"version": {
+			"description": "Format version.",
+			"const": 1
+		},
+		"settings": {
+			"type": "object",
+			"additionalProperties": false,
+			"properties": {
+				"server": {
+					"type": "object",
+					"additionalProperties": false,
+					"properties": {
+						"title": {
+							"type": "string",
+							"description": "Name of the MCP server shown to clients. Defaults to the site name."
+						},
+						"instructions": {
+							"type": "string",
+							"description": "Editorial rules for the AI client: tone, naming, what never to publish without review. Appended to the server description."
+						},
+						"toolPrefix": {
+							"type": "string",
+							"pattern": "^[a-z][a-z0-9-]{0,19}$",
+							"default": "site",
+							"description": "Prefix of every tool name, e.g. \"acme\" gives acme-list-content. Tells sites apart when one client is connected to several."
+						}
+					}
+				},
+				"postTypes": { "$ref": "#/definitions/filter", "description": "Content types the tools can reach. Defaults to every public type." },
+				"zones": {
+					"type": "object",
+					"additionalProperties": false,
+					"description": "Block zones: every ACF flexible content field, by dotted path (\"blocks\", \"archive_posts.blocks\").",
+					"properties": {
+						"include": { "$ref": "#/definitions/strings" },
+						"exclude": { "$ref": "#/definitions/strings" },
+						"labels": {
+							"type": "object",
+							"additionalProperties": { "type": "string" },
+							"description": "Labels shown to clients, keyed by zone id."
+						}
+					}
+				},
+				"pageTemplate": {
+					"type": "string",
+					"default": "auto",
+					"description": "\"auto\" assigns the page template the zone's location rules require, if any. \"none\" never touches it. A template path is assigned to any page without one that receives blocks."
+				},
+				"optionsPages": { "$ref": "#/definitions/filter", "description": "ACF options pages the tools can reach, by menu slug. Defaults to all." },
+				"menus": {
+					"type": "object",
+					"additionalProperties": false,
+					"properties": {
+						"enabled": { "type": "boolean", "default": true },
+						"locations": { "$ref": "#/definitions/strings", "description": "Menu locations exposed. Empty means all." }
+					}
+				},
+				"seo": {
+					"enum": [ "auto", "yoast", "rankmath", "seopress", "none" ],
+					"default": "auto",
+					"description": "SEO plugin the \"seo\" argument writes through."
+				},
+				"oauth": {
+					"type": "object",
+					"additionalProperties": false,
+					"properties": {
+						"enabled": { "type": "boolean", "default": true },
+						"redirectUris": {
+							"$ref": "#/definitions/strings",
+							"description": "Extra redirect URIs clients may register, besides Claude's and loopback addresses."
+						}
+					}
+				}
+			}
+		},
+		"blocks": {
+			"type": "object",
+			"description": "Per-block annotations, keyed by ACF layout name, like styles.blocks in theme.json.",
+			"additionalProperties": {
+				"type": "object",
+				"additionalProperties": false,
+				"properties": {
+					"description": { "type": "string", "description": "What the block is for, shown to the AI client." },
+					"guidance": { "type": "string", "description": "How to use it well: placement, length, what to avoid." },
+					"hidden": { "type": "boolean", "description": "Leave the block out of what clients are offered." }
+				}
+			}
+		},
+		"templates": {
+			"type": "array",
+			"description": "Page templates of the design, as ordered block stacks. Can also live one per file in mcp/templates/<name>.json.",
+			"items": { "$ref": "#/definitions/template" }
+		}
+	},
+	"definitions": {
+		"strings": { "type": "array", "items": { "type": "string" } },
+		"filter": {
+			"type": "object",
+			"additionalProperties": false,
+			"properties": {
+				"include": { "$ref": "#/definitions/strings", "description": "Only these. Empty means all." },
+				"exclude": { "$ref": "#/definitions/strings", "description": "All but these." }
+			}
+		},
+		"template": {
+			"type": "object",
+			"additionalProperties": false,
+			"required": [ "name", "sections" ],
+			"properties": {
+				"$schema": { "type": "string" },
+				"name": { "type": "string", "pattern": "^[a-z0-9][a-z0-9_-]*$" },
+				"title": { "type": "string" },
+				"description": { "type": "string" },
+				"postType": { "type": "string", "default": "page" },
+				"zone": { "type": "string", "description": "Zone the blocks go to. Defaults to the post type's primary zone." },
+				"source": { "type": "string", "description": "Where the design lives, e.g. a Figma URL." },
+				"sections": {
+					"type": "array",
+					"items": {
+						"type": "object",
+						"additionalProperties": false,
+						"properties": {
+							"label": { "type": "string", "description": "Section name in the design." },
+							"block": { "type": [ "string", "null" ], "description": "ACF layout name." },
+							"status": {
+								"enum": [ "exact", "approx", "theme", "missing" ],
+								"description": "exact: the block is the section. approx: nearest block. theme: rendered outside the stack. missing: no block yet. Defaults to exact with a block, missing without."
+							},
+							"note": { "type": "string" }
+						}
+					}
+				}
+			}
+		}
+	}
+}

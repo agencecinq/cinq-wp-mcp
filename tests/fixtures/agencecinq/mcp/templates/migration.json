@@ -1,0 +1,49 @@
+{
+    "$schema": "https://raw.githubusercontent.com/agencecinq/cinq-wp-mcp/main/schemas/mcp.schema.json#/definitions/template",
+    "title": "Page migration",
+    "description": "Migration landing page, e.g. PrestaShop to Shopify.",
+    "postType": "page",
+    "source": "https://www.figma.com/design/I3CVH0brbAgCqXzuLpks34/?node-id=70-5541",
+    "sections": [
+        {
+            "label": "Section · Page Hero",
+            "block": "page_hero",
+            "status": "exact"
+        },
+        {
+            "label": "Section · Editorial Prose",
+            "block": "editorial_prose",
+            "status": "exact"
+        },
+        {
+            "label": "Section · Service Block (3 Columns)",
+            "block": "services",
+            "status": "exact"
+        },
+        {
+            "label": "Section · Vertical Pipeline",
+            "block": "vertical_pipeline",
+            "status": "exact"
+        },
+        {
+            "label": "Section · Shopify Tiers",
+            "block": "pricing_tiers",
+            "status": "exact"
+        },
+        {
+            "label": "Section · FAQ",
+            "block": "accordion_group",
+            "status": "exact"
+        },
+        {
+            "label": "Section · Crosslinks",
+            "block": "crosslinks",
+            "status": "exact"
+        },
+        {
+            "label": "Section · Closing CTA",
+            "block": "call_to_action",
+            "status": "exact"
+        }
+    ]
+}

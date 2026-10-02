@@ -1,0 +1,10 @@
+# Left out of the plugin zip and of `git archive`.
+/.github          export-ignore
+/bin              export-ignore
+/tests            export-ignore
+/.editorconfig    export-ignore
+/.gitattributes   export-ignore
+/.gitignore       export-ignore
+/composer.json    export-ignore
+/composer.lock    export-ignore
+/phpcs.xml        export-ignore

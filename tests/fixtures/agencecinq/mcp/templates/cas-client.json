@@ -1,0 +1,41 @@
+{
+    "$schema": "https://raw.githubusercontent.com/agencecinq/cinq-wp-mcp/main/schemas/mcp.schema.json#/definitions/template",
+    "title": "Cas client",
+    "description": "Case study. Its hero comes from the case-study ACF group; the rest is blocks.",
+    "postType": "case-study",
+    "source": "https://www.figma.com/design/I3CVH0brbAgCqXzuLpks34/?node-id=70-8809",
+    "sections": [
+        {
+            "label": "Section · Case Hero",
+            "status": "theme",
+            "note": "Case study ACF group `hero`: client, platform, year, title, text, image. Set it through the `fields` argument."
+        },
+        {
+            "label": "Section · Editorial Prose",
+            "block": "editorial_prose",
+            "status": "exact"
+        },
+        {
+            "label": "Section · Service Block (3 Columns)",
+            "block": "services",
+            "status": "exact"
+        },
+        {
+            "label": "Section · Client Quote",
+            "block": "client_quote",
+            "status": "exact",
+            "note": "Testimonial: quote, name, role, company."
+        },
+        {
+            "label": "Section · Related Cases",
+            "block": "related_cases",
+            "status": "exact",
+            "note": "Hand-picked case studies with their own teaser text. This block only shows on case studies."
+        },
+        {
+            "label": "Section · Closing CTA",
+            "block": "call_to_action",
+            "status": "exact"
+        }
+    ]
+}

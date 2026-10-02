@@ -1,0 +1,24 @@
+{
+    "$schema": "https://raw.githubusercontent.com/agencecinq/cinq-wp-mcp/main/schemas/mcp.schema.json#/definitions/template",
+    "title": "Blog — index",
+    "description": "Blog landing page. The post archive itself is rendered by the theme archive template.",
+    "postType": "page",
+    "source": "https://www.figma.com/design/I3CVH0brbAgCqXzuLpks34/?node-id=70-8969",
+    "sections": [
+        {
+            "label": "Section · Page Hero",
+            "block": "page_hero",
+            "status": "exact"
+        },
+        {
+            "label": "Section · Blog Teaser",
+            "block": "latest_posts",
+            "status": "exact"
+        },
+        {
+            "label": "Section · Closing CTA",
+            "block": "call_to_action",
+            "status": "exact"
+        }
+    ]
+}

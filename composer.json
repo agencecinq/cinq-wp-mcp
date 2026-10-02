@@ -1,0 +1,42 @@
+{
+	"name": "agencecinq/cinq-wp-mcp",
+	"description": "Exposes a WordPress site built from ACF flexible content blocks as an MCP server.",
+	"type": "wordpress-plugin",
+	"license": "MIT",
+	"authors": [
+		{
+			"name": "CINQ",
+			"email": "contact@agencecinq.com"
+		}
+	],
+	"require": {
+		"php": ">=8.1"
+	},
+	"require-dev": {
+		"wp-coding-standards/wpcs": "^3.3",
+		"dealerdirect/phpcodesniffer-composer-installer": "^1.2"
+	},
+	"autoload": {
+		"psr-4": {
+			"CinqWpMcp\\": "./includes"
+		}
+	},
+	"config": {
+		"allow-plugins": {
+			"dealerdirect/phpcodesniffer-composer-installer": true
+		}
+	},
+	"scripts": {
+		"test": "php tests/run-tests.php",
+		"lint": "phpcs",
+		"lint:fix": "phpcbf"
+	},
+	"homepage": "https://github.com/agencecinq/cinq-wp-mcp",
+	"keywords": [
+		"wordpress",
+		"mcp",
+		"acf",
+		"claude",
+		"ai"
+	]
+}

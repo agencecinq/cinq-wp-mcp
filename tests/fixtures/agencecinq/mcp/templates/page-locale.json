@@ -1,0 +1,40 @@
+{
+    "$schema": "https://raw.githubusercontent.com/agencecinq/cinq-wp-mcp/main/schemas/mcp.schema.json#/definitions/template",
+    "title": "Page locale",
+    "description": "City or region landing page, e.g. \"Shopify Paris\".",
+    "postType": "page",
+    "source": "https://www.figma.com/design/I3CVH0brbAgCqXzuLpks34/?node-id=70-8627",
+    "sections": [
+        {
+            "label": "Section · Page Hero",
+            "block": "page_hero",
+            "status": "exact"
+        },
+        {
+            "label": "Section · Editorial Prose",
+            "block": "editorial_prose",
+            "status": "exact"
+        },
+        {
+            "label": "Section · References Showcase",
+            "block": "references",
+            "status": "exact",
+            "note": "Prefer local case studies."
+        },
+        {
+            "label": "Section · Credibility Banner",
+            "block": "credibility_banner",
+            "status": "exact"
+        },
+        {
+            "label": "Section · Crosslinks",
+            "block": "crosslinks",
+            "status": "exact"
+        },
+        {
+            "label": "Section · Closing CTA",
+            "block": "call_to_action",
+            "status": "exact"
+        }
+    ]
+}

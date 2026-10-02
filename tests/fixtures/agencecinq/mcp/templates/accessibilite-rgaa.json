@@ -1,0 +1,52 @@
+{
+    "$schema": "https://raw.githubusercontent.com/agencecinq/cinq-wp-mcp/main/schemas/mcp.schema.json#/definitions/template",
+    "title": "RGAA Accessibility",
+    "description": "Service page for the accessibility offer.",
+    "postType": "page",
+    "source": "https://www.figma.com/design/I3CVH0brbAgCqXzuLpks34/?node-id=70-4153",
+    "sections": [
+        {
+            "label": "Section · Page Hero",
+            "block": "page_hero",
+            "status": "exact"
+        },
+        {
+            "label": "Section · Credibility Banner",
+            "block": "credibility_banner",
+            "status": "exact",
+            "note": "Thin band of credibility proofs, one text per item."
+        },
+        {
+            "label": "Section · Editorial Prose",
+            "block": "editorial_prose",
+            "status": "exact",
+            "note": "A single reading column: title and rich text."
+        },
+        {
+            "label": "Section · Service Block (3 Columns)",
+            "block": "services",
+            "status": "exact"
+        },
+        {
+            "label": "Section · Entry Points",
+            "block": "entry_points",
+            "status": "exact"
+        },
+        {
+            "label": "Section · FAQ",
+            "block": "accordion_group",
+            "status": "exact"
+        },
+        {
+            "label": "Section · Crosslinks",
+            "block": "crosslinks",
+            "status": "exact",
+            "note": "Links to sibling pages, each with a link and a text."
+        },
+        {
+            "label": "Section · Closing CTA",
+            "block": "call_to_action",
+            "status": "exact"
+        }
+    ]
+}

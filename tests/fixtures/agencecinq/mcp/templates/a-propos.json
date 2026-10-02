@@ -1,0 +1,39 @@
+{
+    "$schema": "https://raw.githubusercontent.com/agencecinq/cinq-wp-mcp/main/schemas/mcp.schema.json#/definitions/template",
+    "title": "À propos",
+    "description": "Agency page.",
+    "postType": "page",
+    "source": "https://www.figma.com/design/I3CVH0brbAgCqXzuLpks34/?node-id=70-9198",
+    "sections": [
+        {
+            "label": "Section · Page Hero",
+            "block": "page_hero",
+            "status": "exact"
+        },
+        {
+            "label": "Section · Vertical Pipeline",
+            "block": "vertical_pipeline",
+            "status": "exact"
+        },
+        {
+            "label": "Section · Team",
+            "block": "team",
+            "status": "exact"
+        },
+        {
+            "label": "Section · Client Quote",
+            "block": "client_quote",
+            "status": "exact"
+        },
+        {
+            "label": "Section · Stats",
+            "block": "stats",
+            "status": "exact"
+        },
+        {
+            "label": "Section · Closing CTA",
+            "block": "call_to_action",
+            "status": "exact"
+        }
+    ]
+}

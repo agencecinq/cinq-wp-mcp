@@ -1,0 +1,46 @@
+name: Release
+
+# Push a tag such as v1.2.0: the plugin zip is built and attached to a GitHub
+# release. Sites running the plugin are offered the update within twelve hours.
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+
+      - name: Check the version
+        run: |
+          tag="${GITHUB_REF_NAME#v}"
+          header="$(sed -n 's/^ \* Version: *//p' cinq-wp-mcp.php)"
+          constant="$(sed -n "s/^const VERSION *= *'\(.*\)';/\1/p" cinq-wp-mcp.php)"
+          if [ "$tag" != "$header" ] || [ "$tag" != "$constant" ]; then
+            echo "Tag $tag, header $header, constant $constant: bump both in cinq-wp-mcp.php." >&2
+            exit 1
+          fi
+
+      - run: composer install --no-interaction --no-progress && composer test
+
+      - name: Build the zip
+        run: |
+          mkdir -p build
+          git archive --format=tar --prefix=cinq-wp-mcp/ HEAD | tar -x -C build
+          (cd build && zip -qr ../cinq-wp-mcp.zip cinq-wp-mcp)
+          unzip -l cinq-wp-mcp.zip | tail -n 5
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: cinq-wp-mcp.zip
+          generate_release_notes: true

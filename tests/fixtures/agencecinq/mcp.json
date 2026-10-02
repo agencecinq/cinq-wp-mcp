@@ -1,0 +1,11 @@
+{
+	"$schema": "https://raw.githubusercontent.com/agencecinq/cinq-wp-mcp/main/schemas/mcp.schema.json",
+	"version": 1,
+	"settings": {
+		"server": {
+			"title": "Agence Cinq",
+			"toolPrefix": "cinq",
+			"instructions": "Pages, blog posts and case studies of agencecinq.com, built from the theme blocks. The front page and case studies take their hero from their own fields, not from blocks. Follow the page templates when one fits, and say so when a section has no block rather than approximating it. Write real alt text: the theme is built to RGAA standards. Create content as drafts unless asked to publish."
+		}
+	}
+}

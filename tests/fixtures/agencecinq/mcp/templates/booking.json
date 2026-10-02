@@ -1,0 +1,29 @@
+{
+    "$schema": "https://raw.githubusercontent.com/agencecinq/cinq-wp-mcp/main/schemas/mcp.schema.json#/definitions/template",
+    "title": "Booking",
+    "description": "Appointment booking page. The scheduler itself has no block.",
+    "postType": "page",
+    "source": "https://www.figma.com/design/I3CVH0brbAgCqXzuLpks34/?node-id=79-8805",
+    "sections": [
+        {
+            "label": "Section · Page Hero",
+            "block": "page_hero",
+            "status": "exact"
+        },
+        {
+            "label": "Section · Booking",
+            "status": "missing",
+            "note": "No booking layout in the theme. It needs either a new ACF layout or an embed handled by the theme."
+        },
+        {
+            "label": "Section · Credibility Banner",
+            "block": "credibility_banner",
+            "status": "exact"
+        },
+        {
+            "label": "Section · Client Quote",
+            "block": "client_quote",
+            "status": "exact"
+        }
+    ]
+}

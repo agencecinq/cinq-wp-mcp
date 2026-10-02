@@ -1,0 +1,68 @@
+{
+    "$schema": "https://raw.githubusercontent.com/agencecinq/cinq-wp-mcp/main/schemas/mcp.schema.json#/definitions/template",
+    "title": "Home",
+    "description": "The front page. Its hero comes from the front-page ACF group, not from the block stack; everything below is blocks.",
+    "postType": "page",
+    "source": "https://www.figma.com/design/I3CVH0brbAgCqXzuLpks34/?node-id=70-2860",
+    "sections": [
+        {
+            "label": "Section · Hero home",
+            "status": "theme",
+            "note": "Front-page ACF group `hero`: overline, title, specs, quote, services. Set it through the `fields` argument, not through blocks."
+        },
+        {
+            "label": "Positioning Banner",
+            "block": "positioning_banner",
+            "status": "exact",
+            "note": "Scrolling statements, each with a text, an availability status and an optional link."
+        },
+        {
+            "label": "Section · References Showcase",
+            "block": "references",
+            "status": "exact",
+            "note": "Selection of case studies, picked through the `items` relationship."
+        },
+        {
+            "label": "Section · Service Block (3 Columns)",
+            "block": "services",
+            "status": "exact",
+            "note": "Three services, each with a title, a text and a link."
+        },
+        {
+            "label": "Section · Vertical Pipeline",
+            "block": "vertical_pipeline",
+            "status": "exact",
+            "note": "Numbered steps down the page."
+        },
+        {
+            "label": "Section · Entry Points",
+            "block": "entry_points",
+            "status": "exact",
+            "note": "Priced entry points with a label and a link."
+        },
+        {
+            "label": "Section · Team",
+            "block": "team",
+            "status": "exact",
+            "note": "Team members with photo, name and role."
+        },
+        {
+            "label": "Section · FAQ",
+            "block": "accordion_group",
+            "status": "exact",
+            "note": "Question and answer accordion."
+        },
+        {
+            "label": "Section · Blog Teaser",
+            "block": "latest_posts",
+            "status": "exact",
+            "note": "Latest posts, optionally filtered by category."
+        },
+        {
+            "label": "Section · Closing CTA",
+            "block": "call_to_action",
+            "status": "exact",
+            "note": "Closing call to action."
+        }
+    ]
+}

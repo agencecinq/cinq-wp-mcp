@@ -1,0 +1,63 @@
+{
+    "$schema": "https://raw.githubusercontent.com/agencecinq/cinq-wp-mcp/main/schemas/mcp.schema.json#/definitions/template",
+    "title": "Tarifs",
+    "description": "Full pricing page: entry points, per-platform tiers, module catalog, rules and subscriptions.",
+    "postType": "page",
+    "source": "https://www.figma.com/design/I3CVH0brbAgCqXzuLpks34/?node-id=70-3272",
+    "sections": [
+        {
+            "label": "Section · Page Hero",
+            "block": "page_hero",
+            "status": "exact",
+            "note": "Overline, title, text and up to two links."
+        },
+        {
+            "label": "Section · Entry Points",
+            "block": "entry_points",
+            "status": "exact"
+        },
+        {
+            "label": "Section · Shopify Tiers",
+            "block": "pricing_tiers",
+            "status": "exact",
+            "note": "One `pricing_tiers` block per platform."
+        },
+        {
+            "label": "Section · WordPress Tiers",
+            "block": "pricing_tiers",
+            "status": "exact"
+        },
+        {
+            "label": "Section · Module Catalog",
+            "status": "missing",
+            "note": "The `grid` block that carried the catalog mosaic was removed from the theme. Nothing replaces it: the catalog needs a new ACF layout."
+        },
+        {
+            "label": "Section · Pricing Rules",
+            "block": "pricing_rules",
+            "status": "exact",
+            "note": "Title, the rules themselves, and an `examples` group listing worked totals."
+        },
+        {
+            "label": "Section · Subscriptions",
+            "block": "subscriptions",
+            "status": "exact",
+            "note": "Recurring plans, each with an overline, a text and its prices."
+        },
+        {
+            "label": "Section · Vertical Pipeline",
+            "block": "vertical_pipeline",
+            "status": "exact"
+        },
+        {
+            "label": "Section · FAQ",
+            "block": "accordion_group",
+            "status": "exact"
+        },
+        {
+            "label": "Section · Closing CTA",
+            "block": "call_to_action",
+            "status": "exact"
+        }
+    ]
+}

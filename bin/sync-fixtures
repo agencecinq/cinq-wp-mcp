@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+#
+# Copies a theme's ACF registration into tests/fixtures/<name>/, so the test
+# harness runs against real field definitions without needing the theme on disk.
+#
+# Usage: bin/sync-fixtures <name> <path to the theme>
+#   bin/sync-fixtures starter ../wp-cinquante-et-un
+#   bin/sync-fixtures agencecinq ../wp-cinq
+
+set -euo pipefail
+
+if [ $# -ne 2 ]; then
+	echo "Usage: $0 <name> <path to the theme>" >&2
+	exit 1
+fi
+
+name="$1"
+theme="$(cd "$2" && pwd)"
+target="$(cd "$(dirname "$0")/.." && pwd)/tests/fixtures/$name"
+
+if [ ! -d "$theme/includes/Plugins/ACF/IncludeFields" ]; then
+	echo "No includes/Plugins/ACF/IncludeFields in $theme" >&2
+	exit 1
+fi
+
+rm -rf "$target/includes"
+mkdir -p "$target/includes/Plugins/ACF"
+cp "$theme/includes/Service.php" "$target/includes/Service.php"
+cp -R "$theme/includes/Plugins/ACF/IncludeFields" "$target/includes/Plugins/ACF/IncludeFields"
+
+# The theme's own MCP configuration, when it has one.
+rm -rf "$target/mcp.json" "$target/mcp"
+[ -f "$theme/mcp.json" ] && cp "$theme/mcp.json" "$target/mcp.json"
+[ -d "$theme/mcp" ] && cp -R "$theme/mcp" "$target/mcp"
+
+if git -C "$theme" rev-parse HEAD >/dev/null 2>&1; then
+	git -C "$theme" rev-parse HEAD > "$target/SOURCE"
+fi
+
+echo "Synced $theme -> $target"

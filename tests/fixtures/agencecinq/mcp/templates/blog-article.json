@@ -1,0 +1,29 @@
+{
+    "$schema": "https://raw.githubusercontent.com/agencecinq/cinq-wp-mcp/main/schemas/mcp.schema.json#/definitions/template",
+    "title": "Blog — article",
+    "description": "A blog post. Its body is the WordPress editor content, not blocks.",
+    "postType": "post",
+    "source": "https://www.figma.com/design/I3CVH0brbAgCqXzuLpks34/?node-id=70-9093",
+    "sections": [
+        {
+            "label": "Section · Page Hero",
+            "status": "theme",
+            "note": "Built from the post title, its featured image and the `subtitle` ACF field."
+        },
+        {
+            "label": "Section · Article Body",
+            "status": "theme",
+            "note": "The post content. Send it as the `content` argument, as HTML."
+        },
+        {
+            "label": "Section · Related Cases",
+            "status": "theme",
+            "note": "Rendered by the single post template."
+        },
+        {
+            "label": "Section · Closing CTA",
+            "status": "theme",
+            "note": "Rendered by the single post template."
+        }
+    ]
+}

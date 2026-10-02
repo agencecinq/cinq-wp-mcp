@@ -1,0 +1,34 @@
+{
+    "$schema": "https://raw.githubusercontent.com/agencecinq/cinq-wp-mcp/main/schemas/mcp.schema.json#/definitions/template",
+    "title": "Landing Ads",
+    "description": "Paid-acquisition landing page. Drawn without the navigation, so it converts rather than lets visitors wander.",
+    "postType": "page",
+    "source": "https://www.figma.com/design/I3CVH0brbAgCqXzuLpks34/?node-id=70-9610",
+    "sections": [
+        {
+            "label": "Section · Page Hero",
+            "block": "page_hero",
+            "status": "exact"
+        },
+        {
+            "label": "Section · Credibility Banner",
+            "block": "credibility_banner",
+            "status": "exact"
+        },
+        {
+            "label": "Section · Service Block (3 Columns)",
+            "block": "services",
+            "status": "exact"
+        },
+        {
+            "label": "Section · Client Quote",
+            "block": "client_quote",
+            "status": "exact"
+        },
+        {
+            "label": "Section · Form + Info",
+            "status": "missing",
+            "note": "Same gap as on the contact page: no form layout in the theme."
+        }
+    ]
+}
