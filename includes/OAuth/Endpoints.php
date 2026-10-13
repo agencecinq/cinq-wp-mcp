@@ -101,6 +101,25 @@ final class Endpoints {
 	}
 
 	/**
+	 * Returns the authorization server metadata as an OpenID Provider
+	 * configuration, with the fields OpenID Connect Discovery requires.
+	 *
+	 * On an install in a subdirectory, `{site}/.well-known/openid-configuration`
+	 * is the only discovery URL MCP clients try that reaches WordPress: the
+	 * OAuth one is looked for at the domain root. The server issues no ID
+	 * token, so the key set is empty and the ID token fields are declarative.
+	 *
+	 * @return array<string, mixed>
+	 */
+	public static function openid_metadata(): array {
+		return self::server_metadata() + array(
+			'jwks_uri'                              => self::url( 'jwks' ),
+			'subject_types_supported'               => array( 'public' ),
+			'id_token_signing_alg_values_supported' => array( 'RS256' ),
+		);
+	}
+
+	/**
 	 * Returns the protected resource metadata (RFC 9728).
 	 *
 	 * @return array<string, mixed>
@@ -145,6 +164,16 @@ final class Endpoints {
 
 		register_rest_route(
 			$namespace,
+			'/' . self::ROUTE . '/jwks',
+			array(
+				'methods'             => 'GET',
+				'callback'            => static fn(): WP_REST_Response => self::json( array( 'keys' => array() ) ),
+				'permission_callback' => '__return_true',
+			)
+		);
+
+		register_rest_route(
+			$namespace,
 			'/' . self::ROUTE . '/register',
 			array(
 				'methods'             => 'POST',
@@ -177,9 +206,6 @@ final class Endpoints {
 	/**
 	 * Serves the `/.well-known/` metadata documents, before WordPress routes the request.
 	 *
-	 * Path-suffixed forms are answered too (`/.well-known/oauth-protected-resource/wp-json/…`),
-	 * since clients derive them from the resource and issuer URLs.
-	 *
 	 * @return void
 	 */
 	public static function serve_well_known(): void {
@@ -187,18 +213,10 @@ final class Endpoints {
 			return;
 		}
 
-		$path = (string) wp_parse_url( sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ), PHP_URL_PATH );
-		$home = untrailingslashit( (string) wp_parse_url( home_url(), PHP_URL_PATH ) );
+		$path     = (string) wp_parse_url( sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ), PHP_URL_PATH );
+		$document = self::well_known( $path, (string) wp_parse_url( home_url(), PHP_URL_PATH ) );
 
-		if ( '' !== $home && str_starts_with( $path, $home . '/.well-known/' ) ) {
-			$path = substr( $path, strlen( $home ) );
-		}
-
-		if ( str_starts_with( $path, '/.well-known/oauth-authorization-server' ) ) {
-			$document = self::server_metadata();
-		} elseif ( str_starts_with( $path, '/.well-known/oauth-protected-resource' ) ) {
-			$document = self::resource_metadata();
-		} else {
+		if ( null === $document ) {
 			return;
 		}
 
@@ -208,6 +226,39 @@ final class Endpoints {
 		header( 'Cache-Control: public, max-age=3600' );
 		echo wp_json_encode( $document );
 		exit;
+	}
+
+	/**
+	 * The metadata document a `/.well-known/` path asks for, `null` for any other path.
+	 *
+	 * Answered at the root of the site, which is under its path on an install in
+	 * a subdirectory, and in the path-suffixed forms clients derive from the
+	 * resource and issuer URLs (`/.well-known/oauth-protected-resource/wp-json/…`).
+	 *
+	 * @param string $path Request path.
+	 * @param string $home Path of the home URL, empty at the domain root.
+	 * @return array<string, mixed>|null
+	 */
+	public static function well_known( string $path, string $home ): ?array {
+		$home = untrailingslashit( $home );
+
+		if ( '' !== $home && str_starts_with( $path, $home . '/.well-known/' ) ) {
+			$path = substr( $path, strlen( $home ) );
+		}
+
+		if ( str_starts_with( $path, '/.well-known/oauth-authorization-server' ) ) {
+			return self::server_metadata();
+		}
+
+		if ( str_starts_with( $path, '/.well-known/openid-configuration' ) ) {
+			return self::openid_metadata();
+		}
+
+		if ( str_starts_with( $path, '/.well-known/oauth-protected-resource' ) ) {
+			return self::resource_metadata();
+		}
+
+		return null;
 	}
 
 	/**

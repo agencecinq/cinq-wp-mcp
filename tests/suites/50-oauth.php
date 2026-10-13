@@ -52,6 +52,29 @@ check( 'public clients only', array( 'none' ) === $server['token_endpoint_auth_m
 check( 'the resource is the MCP endpoint', 'https://example.test/wp-json/cinq-wp-mcp/mcp' === $resource['resource'] );
 check( 'the resource points at the issuer', array( 'https://example.test' ) === $resource['authorization_servers'] );
 
+$openid = Endpoints::openid_metadata();
+
+check( 'the OpenID configuration is the server metadata', array() === array_diff_assoc( array_map( 'json_encode', $server ), array_map( 'json_encode', $openid ) ) );
+check( 'with the fields OpenID Discovery requires', isset( $openid['jwks_uri'] ) && array( 'public' ) === $openid['subject_types_supported'] && array( 'RS256' ) === $openid['id_token_signing_alg_values_supported'] );
+
+section( 'Well-known paths' );
+
+$document = static fn ( string $path, string $home = '' ): string => match ( Endpoints::well_known( $path, $home ) ) {
+	$server   => 'server',
+	$openid   => 'openid',
+	$resource => 'resource',
+	null      => 'none',
+	default   => 'other',
+};
+
+check( 'the server metadata at the domain root', 'server' === $document( '/.well-known/oauth-authorization-server' ) );
+check( 'the resource metadata, path-suffixed', 'resource' === $document( '/.well-known/oauth-protected-resource/wp-json/cinq-wp-mcp/mcp' ) );
+check( 'the OpenID configuration at the domain root', 'openid' === $document( '/.well-known/openid-configuration' ) );
+check( 'in a subdirectory, the OpenID configuration under the site path', 'openid' === $document( '/olmagi/.well-known/openid-configuration', '/olmagi/' ) );
+check( 'in a subdirectory, the server metadata under the site path', 'server' === $document( '/olmagi/.well-known/oauth-authorization-server', '/olmagi' ) );
+check( 'another site of the domain is left alone', 'none' === $document( '/other/.well-known/openid-configuration', '/olmagi' ) );
+check( 'any other path is left to WordPress', 'none' === $document( '/olmagi/contact/', '/olmagi' ) );
+
 section( 'Registration' );
 
 $response = Endpoints::register_client( new WP_REST_Request( array( 'client_name' => 'Claude', 'redirect_uris' => array( 'https://claude.ai/api/mcp/auth_callback' ), 'token_endpoint_auth_method' => 'client_secret_post' ) ) );

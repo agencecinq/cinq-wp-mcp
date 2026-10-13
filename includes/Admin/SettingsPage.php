@@ -230,7 +230,7 @@ final class SettingsPage implements Service {
 			printf( '<li>%s</li>', esc_html__( 'Claude opens this site: sign in with your own account, then allow the connection.', 'cinq-wp-mcp' ) );
 			printf( '<li>%s</li>', esc_html__( 'Each person connects as themselves and edits with their own permissions. Access is revoked from the Connected apps tab, or from the user\'s profile.', 'cinq-wp-mcp' ) );
 			echo '</ol>';
-			echo '<p class="description">' . esc_html__( 'OAuth discovery needs /.well-known/ on this domain to reach WordPress. On an install in a subdirectory, or behind a server that keeps /.well-known/ for itself, use an application password instead.', 'cinq-wp-mcp' ) . '</p>';
+			echo '<p class="description">' . esc_html__( 'OAuth discovery needs /.well-known/ to reach WordPress: at the domain root, or under the site path on an install in a subdirectory. Behind a server that keeps /.well-known/ for itself, use an application password instead.', 'cinq-wp-mcp' ) . '</p>';
 		}
 
 		echo '<h3>' . esc_html__( 'With an application password', 'cinq-wp-mcp' ) . '</h3>';

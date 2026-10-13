@@ -70,9 +70,11 @@ Tokens are stored as SHA-256 hashes and only open the MCP endpoint.
 Registration accepts Claude's callbacks and loopback addresses (desktop and command-line
 clients); add others with `settings.oauth.redirectUris`.
 
-> OAuth discovery needs `https://<site>/.well-known/…` to reach WordPress. On a site
-> installed in a subdirectory, or behind a server that keeps `/.well-known/` for itself,
-> use an application password.
+> OAuth discovery needs `/.well-known/…` to reach WordPress. On a site installed in a
+> subdirectory (`https://example.com/site/`), clients find the server through
+> `https://example.com/site/.well-known/openid-configuration`, which the plugin answers
+> next to its OAuth metadata. Behind a server that keeps `/.well-known/` for itself, use an
+> application password.
 
 ### Application password
 

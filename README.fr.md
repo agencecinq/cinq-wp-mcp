@@ -70,9 +70,11 @@ l'endpoint MCP.
 L'enregistrement accepte les adresses de retour de Claude et les adresses locales (clients
 desktop et ligne de commande) ; en ajouter d'autres avec `settings.oauth.redirectUris`.
 
-> La découverte OAuth passe par `https://<site>/.well-known/…`. Sur un site installé dans un
-> sous-dossier, ou derrière un serveur qui garde `/.well-known/` pour lui, utiliser un mot de
-> passe d'application.
+> La découverte OAuth passe par `/.well-known/…`, qui doit arriver jusqu'à WordPress. Sur un
+> site installé dans un sous-dossier (`https://example.com/site/`), les clients trouvent le
+> serveur par `https://example.com/site/.well-known/openid-configuration`, que le plugin sert
+> à côté de ses métadonnées OAuth. Derrière un serveur qui garde `/.well-known/` pour lui,
+> utiliser un mot de passe d'application.
 
 ### Mot de passe d'application
 
