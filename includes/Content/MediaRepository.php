@@ -101,6 +101,13 @@ final class MediaRepository {
 			$file_name = 'import-' . wp_generate_password( 8, false );
 		}
 
+		// URLs without an extension (CDNs, design tools): name the file after its real type.
+		$mime = wp_get_image_mime( $temp_file );
+
+		if ( ! wp_check_filetype( $file_name )['ext'] && $mime ) {
+			$file_name .= '.' . wp_get_default_extension_for_mime_type( $mime );
+		}
+
 		$file = array(
 			'name'     => sanitize_file_name( $file_name ),
 			'tmp_name' => $temp_file,
