@@ -181,3 +181,23 @@ check( 'an excluded post type disappears', ! isset( ZoneRegistry::registrable_po
 check( 'only included options pages remain', array( 'options-theme' ) === array_keys( \CinqWpMcp\Options\OptionsRepository::pages() ) );
 check( 'a hidden block is not offered', ! isset( ZoneRegistry::visible_layouts( ZoneRegistry::get( 'blocks' ) )['form'] ) );
 check( 'but it still exists for blocks already on a page', null !== ZoneRegistry::get( 'blocks' )->layout( 'form' ) );
+
+section( 'Private post types named in the config' );
+
+World::$admin_post_types = array( 'mode', 'log' );
+World::$template_dir     = make_theme(
+	array(
+		'mcp.json' => array(
+			'version'  => 1,
+			'settings' => array( 'postTypes' => array( 'include' => array( 'page', 'mode' ) ) ),
+		),
+	)
+);
+Config::flush();
+ZoneRegistry::flush();
+
+check( 'an included private type is reachable', isset( ZoneRegistry::registrable_post_types()['mode'] ) );
+check( 'a private type left out stays hidden', ! isset( ZoneRegistry::registrable_post_types()['log'] ) );
+check( 'the include list still filters public types', array( 'page', 'mode' ) === array_keys( ZoneRegistry::registrable_post_types() ) );
+
+World::$admin_post_types = array();

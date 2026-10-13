@@ -389,7 +389,9 @@ final class ZoneRegistry {
 	}
 
 	/**
-	 * Returns the post types this plugin manages, after the config filter.
+	 * Returns the post types this plugin manages, after the config filter:
+	 * every public type, plus the private ones edited in the admin that the
+	 * config names in `settings.postTypes.include`.
 	 *
 	 * @return array<string, string> Labels keyed by slug.
 	 */
@@ -402,6 +404,14 @@ final class ZoneRegistry {
 			}
 
 			$types[ $type->name ] = (string) ( $type->labels->singular_name ?? $type->name );
+		}
+
+		foreach ( Config::strings( 'settings.postTypes.include' ) as $name ) {
+			$type = get_post_type_object( $name );
+
+			if ( $type && ! empty( $type->show_ui ) && ! isset( $types[ $name ] ) ) {
+				$types[ $name ] = (string) ( $type->labels->singular_name ?? $name );
+			}
 		}
 
 		$kept = Config::filter( 'settings.postTypes', array_keys( $types ) );

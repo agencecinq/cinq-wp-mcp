@@ -64,6 +64,9 @@ final class World {
 	/** @var array<int, string> Public post types. */
 	public static array $post_types = array( 'page', 'post' );
 
+	/** @var array<int, string> Private post types shown in the admin. */
+	public static array $admin_post_types = array();
+
 	/** @var array<string, array<string, string>> Page templates per post type. */
 	public static array $page_templates = array();
 
@@ -93,6 +96,7 @@ final class World {
 		self::$menu_locations = self::$assigned_menus = self::$by_type = array();
 		self::$flexible       = true;
 		self::$post_types     = array( 'page', 'post' );
+		self::$admin_post_types = array();
 		self::$template_dir   = '';
 		self::$stylesheet_dir = '';
 
@@ -427,7 +431,22 @@ function get_post_types( array $args = array(), string $output = 'names' ): arra
 }
 
 function post_type_exists( string $type ): bool {
-	return in_array( $type, World::$post_types, true );
+	return in_array( $type, World::$post_types, true ) || in_array( $type, World::$admin_post_types, true );
+}
+
+function get_post_type_object( string $type ): ?stdClass {
+	if ( ! post_type_exists( $type ) ) {
+		return null;
+	}
+
+	$object                        = new stdClass();
+	$object->name                  = $type;
+	$object->public                = in_array( $type, World::$post_types, true );
+	$object->show_ui               = true;
+	$object->labels                = new stdClass();
+	$object->labels->singular_name = ucfirst( $type );
+
+	return $object;
 }
 
 function is_post_type_hierarchical( string $type ): bool {

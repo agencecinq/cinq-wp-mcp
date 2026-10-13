@@ -186,6 +186,8 @@ is ignored whole and its errors are shown in the admin.
 
 - `settings.server.instructions` is appended to the server description: it is where the
   editorial rules for the AI go.
+- `settings.postTypes` filters the public content types. A private type that has an admin
+  screen (a catalog, a list of settings records) is reachable once named in `include`.
 - `blocks.<layout>` annotates a layout (`description`, `guidance`) or hides it (`hidden`).
 - `templates` can also live one per file in `mcp/templates/<name>.json`. Section statuses:
   `exact` (the block is the section), `approx` (nearest block), `theme` (rendered outside

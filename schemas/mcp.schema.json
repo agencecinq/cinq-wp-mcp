@@ -36,7 +36,7 @@
 						}
 					}
 				},
-				"postTypes": { "$ref": "#/definitions/filter", "description": "Content types the tools can reach. Defaults to every public type." },
+				"postTypes": { "$ref": "#/definitions/filter", "description": "Content types the tools can reach. Defaults to every public type; a private type shown in the admin is reachable once named in include." },
 				"zones": {
 					"type": "object",
 					"additionalProperties": false,
