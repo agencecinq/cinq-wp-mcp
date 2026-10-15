@@ -223,17 +223,25 @@ final class SettingsPage implements Service {
 		);
 		echo '</tbody></table>';
 
-		if ( false !== Config::get( 'settings.oauth.enabled', true ) ) {
-			echo '<h3>' . esc_html__( 'With OAuth (recommended)', 'cinq-wp-mcp' ) . '</h3>';
+		$oauth = false !== Config::get( 'settings.oauth.enabled', true );
+
+		if ( $oauth ) {
+			echo '<h3>' . esc_html__( 'In Claude', 'cinq-wp-mcp' ) . '</h3>';
 			echo '<ol>';
-			printf( '<li>%s</li>', esc_html__( 'In Claude, add a custom connector and paste the endpoint above. Leave the authentication on OAuth.', 'cinq-wp-mcp' ) );
-			printf( '<li>%s</li>', esc_html__( 'Claude opens this site: sign in with your own account, then allow the connection.', 'cinq-wp-mcp' ) );
-			printf( '<li>%s</li>', esc_html__( 'Each person connects as themselves and edits with their own permissions. Access is revoked from the Connected apps tab, or from the user\'s profile.', 'cinq-wp-mcp' ) );
+			printf( '<li>%s</li>', esc_html__( 'Settings → Connectors → Add custom connector (Claude desktop or claude.ai).', 'cinq-wp-mcp' ) );
+			printf( '<li>%s</li>', esc_html__( 'Name: anything, the site name for instance. URL: the MCP endpoint above. Leave everything else empty.', 'cinq-wp-mcp' ) );
+			printf( '<li>%s</li>', esc_html__( 'Click Connect: Claude opens this site, sign in with your own WordPress account, then allow the connection.', 'cinq-wp-mcp' ) );
 			echo '</ol>';
-			echo '<p class="description">' . esc_html__( 'OAuth discovery needs /.well-known/ to reach WordPress: at the domain root, or under the site path on an install in a subdirectory. Behind a server that keeps /.well-known/ for itself, use an application password instead.', 'cinq-wp-mcp' ) . '</p>';
+			echo '<p>' . esc_html__( 'Each person connects as themselves and edits with their own permissions. Access is revoked from the Connected apps tab, or from the user\'s profile.', 'cinq-wp-mcp' ) . '</p>';
+
+			$this->render_diagnostics();
+
+			echo '<details style="margin-top:2em"><summary style="cursor:pointer"><strong>' . esc_html__( 'Alternative: an application password', 'cinq-wp-mcp' ) . '</strong></summary>';
+			echo '<p>' . esc_html__( 'For clients that do not support OAuth. One connector means one shared account.', 'cinq-wp-mcp' ) . '</p>';
+		} else {
+			echo '<h3>' . esc_html__( 'With an application password', 'cinq-wp-mcp' ) . '</h3>';
 		}
 
-		echo '<h3>' . esc_html__( 'With an application password', 'cinq-wp-mcp' ) . '</h3>';
 		echo '<ol>';
 		printf(
 			'<li>%s</li>',
@@ -275,6 +283,46 @@ final class SettingsPage implements Service {
 				)
 			)
 		);
+
+		if ( $oauth ) {
+			echo '</details>';
+		}
+	}
+
+	/**
+	 * Renders the connection checks, run on demand.
+	 *
+	 * @return void
+	 */
+	private function render_diagnostics(): void {
+		echo '<h3>' . esc_html__( 'Connection check', 'cinq-wp-mcp' ) . '</h3>';
+
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only checks.
+		if ( empty( $_GET['diagnose'] ) ) {
+			echo '<p>' . esc_html__( 'If Claude fails to connect, this plays its requests from the server and says which step breaks.', 'cinq-wp-mcp' ) . '</p>';
+			printf( '<p><a class="button" href="%s">%s</a></p>', esc_url( add_query_arg( 'diagnose', '1', $this->url( 'connect' ) ) ), esc_html__( 'Check the connection', 'cinq-wp-mcp' ) );
+
+			return;
+		}
+
+		echo '<table class="widefat striped" style="max-width:60em"><tbody>';
+
+		foreach ( Diagnostics::run() as $check ) {
+			$icon = match ( $check['ok'] ) {
+				true    => '<span class="dashicons dashicons-yes" style="color:#008a20"></span>',
+				false   => '<span class="dashicons dashicons-warning" style="color:#d63638"></span>',
+				default => '<span class="dashicons dashicons-minus" style="color:#646970"></span>',
+			};
+
+			printf(
+				'<tr><th scope="row" style="width:14em">%s</th><td style="width:2em">%s</td><td>%s</td></tr>',
+				esc_html( $check['label'] ),
+				$icon, // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- fixed markup above.
+				esc_html( $check['message'] )
+			);
+		}
+
+		echo '</tbody></table>';
 	}
 
 	/**

@@ -39,9 +39,11 @@ wp plugin install https://github.com/WordPress/mcp-adapter/releases/latest/downl
 wp plugin install https://github.com/agencecinq/cinq-wp-mcp/releases/latest/download/cinq-wp-mcp.zip --activate
 ```
 
-Les mises à jour arrivent depuis les releases GitHub, dans l'écran *Extensions* habituel :
-l'en-tête `Update URI` pointe sur ce dépôt et WordPress propose chaque nouvelle version dans
-les douze heures.
+Les mises à jour arrivent depuis les releases GitHub et s'installent seules : l'en-tête
+`Update URI` pointe sur ce dépôt, WordPress voit chaque nouvelle version dans les douze heures
+et l'installe avec ses mises à jour automatiques. *Tableau de bord → Mises à jour → Vérifier à
+nouveau* regarde tout de suite. Pour garder la main sur un site, renvoyer false au filtre
+`cinq_wp_mcp_auto_update`.
 
 **Réglages → CINQ WP MCP** montre l'adresse du serveur, ce que le plugin a trouvé dans le
 thème, d'où vient la configuration, et les applications connectées.
@@ -52,9 +54,10 @@ Le serveur MCP répond sur `https://<site>/wp-json/cinq-wp-mcp/mcp`.
 
 ### OAuth (recommandé)
 
-Dans Claude, ajouter un connecteur personnalisé avec cette adresse, authentification OAuth.
-Claude découvre le serveur, s'enregistre et ouvre le site : on se connecte avec son propre
-compte WordPress et on autorise. Chacun se connecte en son nom, avec ses droits, et apparaît
+Dans Claude (desktop ou claude.ai) : *Paramètres → Connecteurs → Ajouter un connecteur
+personnalisé*, un nom et cette adresse, rien d'autre. Cliquer *Connecter* : Claude découvre
+le serveur, s'enregistre et ouvre le site ; on se connecte avec son propre compte WordPress
+et on autorise. Chacun se connecte en son nom, avec ses droits, et apparaît
 comme auteur de ses modifications dans les révisions.
 
 Les accès se révoquent par application dans *Réglages → CINQ WP MCP → Applications
@@ -63,18 +66,22 @@ connectées*, ou par chaque utilisateur depuis son profil.
 Le plugin est son propre serveur d'autorisation OAuth 2.1, comme l'attend la spec MCP :
 métadonnées (RFC 8414, RFC 9728), enregistrement dynamique des clients (RFC 7591), PKCE S256
 obligatoire, clients publics uniquement, jetons d'accès d'une heure, jetons de
-rafraîchissement de trente jours renouvelés à chaque usage (un jeton rejoué révoque toute la
-chaîne), révocation (RFC 7009). Les jetons sont stockés hachés (SHA-256) et n'ouvrent que
+rafraîchissement de trente jours renouvelés à chaque usage (un jeton rejoué au-delà d'une
+minute de tolérance révoque toute la chaîne), révocation (RFC 7009). Les jetons sont stockés hachés (SHA-256) et n'ouvrent que
 l'endpoint MCP.
 
 L'enregistrement accepte les adresses de retour de Claude et les adresses locales (clients
 desktop et ligne de commande) ; en ajouter d'autres avec `settings.oauth.redirectUris`.
 
-> La découverte OAuth passe par `/.well-known/…`, qui doit arriver jusqu'à WordPress. Sur un
-> site installé dans un sous-dossier (`https://example.com/site/`), les clients trouvent le
-> serveur par `https://example.com/site/.well-known/openid-configuration`, que le plugin sert
-> à côté de ses métadonnées OAuth. Derrière un serveur qui garde `/.well-known/` pour lui,
-> utiliser un mot de passe d'application.
+> L'émetteur est la route REST du plugin (`https://<site>/wp-json/cinq-wp-mcp/oauth`) : les
+> clients trouvent les métadonnées du serveur à `…/oauth/.well-known/openid-configuration`, et
+> la découverte marche partout où l'endpoint MCP marche, même derrière un serveur qui garde
+> le `/.well-known/` de la racine pour lui. Les documents à la racine restent servis quand ils
+> arrivent jusqu'à WordPress.
+>
+> Si Claude n'arrive pas à se connecter, *Réglages → CINQ WP MCP → Check the connection*
+> rejoue ses requêtes depuis le serveur et dit quelle étape casse (un cache qui répond à la
+> place de WordPress, un en-tête `Authorization` supprimé avant PHP…).
 
 ### Mot de passe d'application
 
@@ -132,7 +139,9 @@ composer lint     # WordPress Coding Standards
 Le banc d'essai charge les vrais enregistrements ACF de `tests/fixtures/` (le starter et
 agencecinq.com). Les mettre à jour : `bin/sync-fixtures <nom> <chemin du thème>`.
 
-Publier : monter `Version` et `VERSION` dans `cinq-wp-mcp.php`, pousser un tag `v*`.
+Publier : monter `Version` et `VERSION` dans `cinq-wp-mcp.php`, pousser un tag `v*`. Le
+workflow teste, construit `cinq-wp-mcp.zip` et l'`update.json` que lit l'updater, et les
+attache à une release GitHub.
 
 ## Limites
 

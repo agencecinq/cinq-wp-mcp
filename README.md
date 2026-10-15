@@ -38,9 +38,10 @@ wp plugin install https://github.com/WordPress/mcp-adapter/releases/latest/downl
 wp plugin install https://github.com/agencecinq/cinq-wp-mcp/releases/latest/download/cinq-wp-mcp.zip --activate
 ```
 
-Updates come from GitHub releases through the regular *Plugins* screen: the plugin's
-`Update URI` points at this repository, and WordPress is offered each new release within
-twelve hours.
+Updates come from GitHub releases and install themselves: the plugin's `Update URI` points
+at this repository, WordPress sees each new release within twelve hours and installs it with
+its own background updates. *Dashboard → Updates → Check again* looks right away. To keep
+updates manual on a site, return false from the `cinq_wp_mcp_auto_update` filter.
 
 **Settings → CINQ WP MCP** shows the endpoint, what was found in the theme, where the
 configuration comes from, and the connected applications.
@@ -51,9 +52,9 @@ The MCP endpoint is `https://<site>/wp-json/cinq-wp-mcp/mcp`.
 
 ### OAuth (recommended)
 
-In Claude, add a custom connector with that URL and leave authentication on OAuth. Claude
-discovers the server, registers itself, and opens the site: sign in with your own
-WordPress account and allow the connection. Each person connects as themselves, with their
+In Claude (desktop or claude.ai): *Settings → Connectors → Add custom connector*, a name and
+that URL, nothing else. Click *Connect*: Claude discovers the server, registers itself, and
+opens the site: sign in with your own WordPress account and allow the connection. Each person connects as themselves, with their
 own capabilities, and appears as the author of their changes in the revisions.
 
 Access is revoked per application from *Settings → CINQ WP MCP → Connected apps*, or by
@@ -63,18 +64,21 @@ The plugin is its own OAuth 2.1 authorization server, as the MCP specification e
 metadata ([RFC 8414](https://www.rfc-editor.org/rfc/rfc8414),
 [RFC 9728](https://www.rfc-editor.org/rfc/rfc9728)), dynamic client registration
 ([RFC 7591](https://www.rfc-editor.org/rfc/rfc7591)), PKCE S256 mandatory, public clients
-only, one-hour access tokens, thirty-day refresh tokens rotated at each use (a replayed one
-revokes the whole chain), revocation ([RFC 7009](https://www.rfc-editor.org/rfc/rfc7009)).
+only, one-hour access tokens, thirty-day refresh tokens rotated at each use (one replayed
+past a one-minute grace window revokes the whole chain), revocation ([RFC 7009](https://www.rfc-editor.org/rfc/rfc7009)).
 Tokens are stored as SHA-256 hashes and only open the MCP endpoint.
 
 Registration accepts Claude's callbacks and loopback addresses (desktop and command-line
 clients); add others with `settings.oauth.redirectUris`.
 
-> OAuth discovery needs `/.well-known/…` to reach WordPress. On a site installed in a
-> subdirectory (`https://example.com/site/`), clients find the server through
-> `https://example.com/site/.well-known/openid-configuration`, which the plugin answers
-> next to its OAuth metadata. Behind a server that keeps `/.well-known/` for itself, use an
-> application password.
+> The issuer is the plugin's REST route (`https://<site>/wp-json/cinq-wp-mcp/oauth`), so
+> clients find the server metadata at `…/oauth/.well-known/openid-configuration`: discovery
+> works wherever the MCP endpoint does, even behind a server that keeps the root
+> `/.well-known/` for itself. The root documents are still served when they reach WordPress.
+>
+> If Claude fails to connect, *Settings → CINQ WP MCP → Check the connection* plays its
+> requests from the server and says which step breaks (a cache answering in place of
+> WordPress, an `Authorization` header dropped before PHP…).
 
 ### Application password
 
@@ -211,7 +215,8 @@ configuration, OAuth and updates against them. Refresh a fixture with
 `bin/sync-fixtures <name> <path to the theme>`.
 
 Release: bump `Version` and `VERSION` in `cinq-wp-mcp.php`, then push a `v*` tag. The
-workflow tests, builds `cinq-wp-mcp.zip` and attaches it to a GitHub release.
+workflow tests, builds `cinq-wp-mcp.zip` and the `update.json` the updater reads, and
+attaches both to a GitHub release.
 
 ## Limits
 
