@@ -40,6 +40,15 @@ final class Protocol {
 	public const REFRESH_TTL = 30 * 86400;
 
 	/**
+	 * Seconds during which a refresh token that was just rotated still works.
+	 *
+	 * A client that refreshes from two requests at once, or retries a refresh
+	 * whose answer it never received, presents the same token twice within
+	 * seconds. Without this window that looks like theft and disconnects it.
+	 */
+	public const REFRESH_REUSE_WINDOW = 60;
+
+	/**
 	 * Redirect URIs accepted without configuration: Claude's connectors.
 	 */
 	public const DEFAULT_REDIRECT_URIS = array(
@@ -156,6 +165,23 @@ final class Protocol {
 		}
 
 		return false;
+	}
+
+	/**
+	 * Returns whether a spent refresh token is still within its reuse window.
+	 *
+	 * @param string|null $used_at When it was spent, `Y-m-d H:i:s` UTC; null if never.
+	 * @param int         $now     Current timestamp.
+	 * @return bool
+	 */
+	public static function reuse_allowed( ?string $used_at, int $now ): bool {
+		if ( null === $used_at || '' === $used_at ) {
+			return false;
+		}
+
+		$spent = strtotime( $used_at . ' UTC' );
+
+		return false !== $spent && $now - $spent <= self::REFRESH_REUSE_WINDOW;
 	}
 
 	/**

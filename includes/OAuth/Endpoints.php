@@ -37,12 +37,33 @@ final class Endpoints {
 	private const REGISTRATIONS_PER_HOUR = 20;
 
 	/**
-	 * Returns the issuer identifier: the site's home URL.
+	 * Returns the issuer identifier: the OAuth route of the REST API.
+	 *
+	 * Clients look for the metadata of an issuer with a path in three places
+	 * (RFC 8414 and OpenID Connect Discovery). Two are under `/.well-known/` at
+	 * the domain root, which many servers keep for themselves; the third is the
+	 * issuer followed by `/.well-known/openid-configuration`. With the issuer in
+	 * the REST API, that third URL is a REST route: it reaches WordPress wherever
+	 * the MCP endpoint does, whatever the server does with `/.well-known/`.
+	 *
+	 * Without pretty permalinks the REST URL carries a query string, which an
+	 * issuer may not: the site's home URL is the issuer then.
 	 *
 	 * @return string
 	 */
 	public static function issuer(): string {
-		return untrailingslashit( home_url() );
+		$issuer = untrailingslashit( self::url( '' ) );
+
+		return str_contains( $issuer, '?' ) ? untrailingslashit( home_url() ) : $issuer;
+	}
+
+	/**
+	 * Returns the discovery URL a client ends up reading for this issuer.
+	 *
+	 * @return string
+	 */
+	public static function discovery_url(): string {
+		return self::issuer() . '/.well-known/openid-configuration';
 	}
 
 	/**
@@ -104,10 +125,10 @@ final class Endpoints {
 	 * Returns the authorization server metadata as an OpenID Provider
 	 * configuration, with the fields OpenID Connect Discovery requires.
 	 *
-	 * On an install in a subdirectory, `{site}/.well-known/openid-configuration`
-	 * is the only discovery URL MCP clients try that reaches WordPress: the
-	 * OAuth one is looked for at the domain root. The server issues no ID
-	 * token, so the key set is empty and the ID token fields are declarative.
+	 * `{issuer}/.well-known/openid-configuration` is the one discovery URL MCP
+	 * clients try that is sure to reach WordPress: the OAuth one is looked for
+	 * at the domain root. The server issues no ID token, so the key set is
+	 * empty and the ID token fields are declarative.
 	 *
 	 * @return array<string, mixed>
 	 */
@@ -155,6 +176,28 @@ final class Endpoints {
 		register_rest_route(
 			$namespace,
 			'/' . self::ROUTE . '/authorization-server',
+			array(
+				'methods'             => 'GET',
+				'callback'            => static fn(): WP_REST_Response => self::json( self::server_metadata() ),
+				'permission_callback' => '__return_true',
+			)
+		);
+
+		// The discovery documents under the issuer, where clients look last and
+		// the only place sure to reach WordPress (see issuer()).
+		register_rest_route(
+			$namespace,
+			'/' . self::ROUTE . '/\.well-known/openid-configuration',
+			array(
+				'methods'             => 'GET',
+				'callback'            => static fn(): WP_REST_Response => self::json( self::openid_metadata() ),
+				'permission_callback' => '__return_true',
+			)
+		);
+
+		register_rest_route(
+			$namespace,
+			'/' . self::ROUTE . '/\.well-known/oauth-authorization-server',
 			array(
 				'methods'             => 'GET',
 				'callback'            => static fn(): WP_REST_Response => self::json( self::server_metadata() ),
@@ -390,24 +433,30 @@ final class Endpoints {
 	 * @return WP_REST_Response
 	 */
 	private static function refresh( WP_REST_Request $request ): WP_REST_Response {
-		$token = Store::find( (string) $request->get_param( 'refresh_token' ), 'refresh' );
+		$secret = (string) $request->get_param( 'refresh_token' );
+		$token  = Store::find( $secret, 'refresh' );
 
 		if ( null === $token || $token['revoked'] || $token['expired'] ) {
 			return self::error( 'invalid_grant', 'This refresh token is no longer valid. Authorize again.' );
-		}
-
-		// Rotation: a refresh token works once. Seeing it again means two
-		// parties hold it, and there is no telling which is legitimate.
-		if ( $token['used'] || ! Store::consume( (int) $token['id'] ) ) {
-			Store::revoke_family( (string) $token['family'] );
-
-			return self::error( 'invalid_grant', 'This refresh token was already used. Authorize again.' );
 		}
 
 		if ( (string) $request->get_param( 'client_id' ) !== $token['client_id'] ) {
 			Store::revoke_family( (string) $token['family'] );
 
 			return self::error( 'invalid_grant', 'This refresh token was issued to another client.' );
+		}
+
+		// Rotation: a refresh token works once. Seeing it again long after means
+		// two parties hold it, and there is no telling which is legitimate. Seeing
+		// it again within seconds is the same client racing itself or retrying.
+		if ( ! Store::consume( (int) $token['id'] ) ) {
+			$spent = Store::find( $secret, 'refresh' ) ?? $token;
+
+			if ( ! Protocol::reuse_allowed( $spent['used_at'] ?? null, time() ) ) {
+				Store::revoke_family( (string) $token['family'] );
+
+				return self::error( 'invalid_grant', 'This refresh token was already used. Authorize again.' );
+			}
 		}
 
 		$requested = (string) $request->get_param( 'scope' );

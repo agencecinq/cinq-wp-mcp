@@ -46,11 +46,12 @@ section( 'Metadata' );
 $server   = Endpoints::server_metadata();
 $resource = Endpoints::resource_metadata();
 
-check( 'the issuer is the site', 'https://example.test' === $server['issuer'] );
+check( 'the issuer is the OAuth route of the REST API', 'https://example.test/wp-json/cinq-wp-mcp/oauth' === $server['issuer'] );
+check( 'so clients end up reading a REST route', 'https://example.test/wp-json/cinq-wp-mcp/oauth/.well-known/openid-configuration' === Endpoints::discovery_url() );
 check( 'only S256 is offered', array( 'S256' ) === $server['code_challenge_methods_supported'] );
 check( 'public clients only', array( 'none' ) === $server['token_endpoint_auth_methods_supported'] );
 check( 'the resource is the MCP endpoint', 'https://example.test/wp-json/cinq-wp-mcp/mcp' === $resource['resource'] );
-check( 'the resource points at the issuer', array( 'https://example.test' ) === $resource['authorization_servers'] );
+check( 'the resource points at the issuer', array( $server['issuer'] ) === $resource['authorization_servers'] );
 
 $openid = Endpoints::openid_metadata();
 
@@ -137,8 +138,25 @@ $refresh = static fn( string $token, array $extra = array() ) => Endpoints::toke
 $rotated = $refresh( (string) $tokens['refresh_token'] )->get_data();
 
 check( 'a refresh token buys a new pair', isset( $rotated['access_token'], $rotated['refresh_token'] ) && $rotated['refresh_token'] !== $tokens['refresh_token'] );
-check( 'the old refresh token is spent', 'invalid_grant' === ( $refresh( (string) $tokens['refresh_token'] )->get_data()['error'] ?? null ) );
-check( 'reusing it revokes the whole family', true === Store::find( (string) $rotated['access_token'], 'access' )['revoked'] );
+
+$retried = $refresh( (string) $tokens['refresh_token'] )->get_data();
+
+check( 'presented again within seconds, it still works', isset( $retried['access_token'] ) && $retried['access_token'] !== $rotated['access_token'], json_encode( $retried ) );
+check( 'without revoking what it issued first', false === Store::find( (string) $rotated['access_token'], 'access' )['revoked'] );
+
+$spend_long_ago = static function ( string $secret ): void {
+	foreach ( $GLOBALS['wpdb']->tables['wp_cinq_wp_mcp_tokens'] as $index => $row ) {
+		if ( Store::hash( $secret ) === $row['token_hash'] ) {
+			$GLOBALS['wpdb']->tables['wp_cinq_wp_mcp_tokens'][ $index ]['used_at'] = gmdate( 'Y-m-d H:i:s', time() - Protocol::REFRESH_REUSE_WINDOW - 5 );
+		}
+	}
+};
+
+$spend_long_ago( (string) $tokens['refresh_token'] );
+
+check( 'past the window, the old refresh token is spent', 'invalid_grant' === ( $refresh( (string) $tokens['refresh_token'] )->get_data()['error'] ?? null ) );
+check( 'reusing it revokes the whole family', true === Store::find( (string) $rotated['access_token'], 'access' )['revoked'] && true === Store::find( (string) $retried['access_token'], 'access' )['revoked'] );
+check( 'the window is measured from the first use', Protocol::reuse_allowed( gmdate( 'Y-m-d H:i:s', time() - 10 ), time() ) && ! Protocol::reuse_allowed( null, time() ) );
 
 $tokens = $exchange( $issue() )->get_data();
 $narrow = $refresh( (string) $tokens['refresh_token'], array( 'scope' => 'read' ) )->get_data();
