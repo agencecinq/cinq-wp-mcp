@@ -17,13 +17,22 @@ use const CinqWpMcp\VERSION;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Offers updates from the latest GitHub release, like any other plugin.
+ * Offers updates from the latest GitHub release, like any other plugin, and
+ * installs them on its own.
  *
  * The plugin is distributed on GitHub only. Its `Update URI` header points
  * there, which makes WordPress skip WordPress.org and ask the
  * `update_plugins_github.com` filter instead. That filter reads the latest
  * release (cached twelve hours) and hands WordPress the zip the release
  * workflow attaches to it.
+ *
+ * The release is read from the `update.json` the workflow attaches next to the
+ * zip: a plain download, which GitHub does not rate-limit, where its API
+ * allows sixty calls an hour per address and shared hosting puts many sites
+ * behind one. The API stays as a fallback for releases without the file.
+ *
+ * Auto-updates are on: WordPress installs a new release with its own updates,
+ * twice a day. The `cinq_wp_mcp_auto_update` filter turns them off.
  */
 final class GitHubUpdater implements Service {
 
@@ -38,6 +47,11 @@ final class GitHubUpdater implements Service {
 	public const ASSET = 'cinq-wp-mcp.zip';
 
 	/**
+	 * Name of the release manifest attached to each release.
+	 */
+	public const MANIFEST = 'update.json';
+
+	/**
 	 * Transient caching the latest release.
 	 */
 	private const TRANSIENT = 'cinq_wp_mcp_latest_release';
@@ -50,6 +64,80 @@ final class GitHubUpdater implements Service {
 	public function run(): void {
 		add_filter( 'update_plugins_github.com', array( $this, 'check' ), 10, 3 );
 		add_filter( 'plugins_api', array( $this, 'details' ), 20, 3 );
+		add_filter( 'auto_update_plugin', array( $this, 'auto_update' ), 10, 2 );
+		add_filter( 'upgrader_source_selection', array( $this, 'keep_folder' ), 10, 4 );
+		add_action( 'upgrader_process_complete', array( self::class, 'forget' ) );
+		add_action( 'load-update-core.php', array( $this, 'force_check' ) );
+	}
+
+	/**
+	 * Turns auto-updates on for this plugin.
+	 *
+	 * @param bool|null $update Whether to update, as decided so far.
+	 * @param object    $item   Update offer.
+	 * @return bool|null
+	 */
+	public function auto_update( $update, $item ) {
+		if ( ! is_object( $item ) || plugin_basename( PLUGIN_FILE ) !== ( $item->plugin ?? '' ) ) {
+			return $update;
+		}
+
+		/**
+		 * Filters whether WordPress installs new releases of the plugin on its own.
+		 *
+		 * @param bool $enabled Default true.
+		 */
+		return (bool) apply_filters( 'cinq_wp_mcp_auto_update', true );
+	}
+
+	/**
+	 * Unpacks an update into the folder the plugin already lives in.
+	 *
+	 * The zip unpacks into `cinq-wp-mcp/`. A copy installed under another name
+	 * (a clone, a renamed folder) would otherwise come back under that one, and
+	 * WordPress would deactivate the plugin it can no longer find.
+	 *
+	 * @param string|\WP_Error     $source        Unpacked folder.
+	 * @param string               $remote_source Folder it was unpacked in.
+	 * @param mixed                $upgrader      Upgrader.
+	 * @param array<string, mixed> $hook_extra    Context; `plugin` on updates.
+	 * @return string|\WP_Error
+	 */
+	public function keep_folder( $source, $remote_source, $upgrader, $hook_extra = array() ) {
+		global $wp_filesystem;
+
+		if ( ! is_string( $source ) || plugin_basename( PLUGIN_FILE ) !== ( $hook_extra['plugin'] ?? '' ) ) {
+			return $source;
+		}
+
+		$folder = dirname( plugin_basename( PLUGIN_FILE ) );
+		$target = trailingslashit( $remote_source ) . $folder . '/';
+
+		if ( '.' === $folder || untrailingslashit( $source ) === untrailingslashit( $target ) || ! is_object( $wp_filesystem ) ) {
+			return $source;
+		}
+
+		return $wp_filesystem->move( $source, $target, true ) ? $target : $source;
+	}
+
+	/**
+	 * Forgets the cached release, so the next check asks GitHub again.
+	 *
+	 * @return void
+	 */
+	public static function forget(): void {
+		delete_transient( self::TRANSIENT );
+	}
+
+	/**
+	 * Reads GitHub again when "Check again" is clicked on the Updates screen.
+	 *
+	 * @return void
+	 */
+	public function force_check(): void {
+		if ( isset( $_GET['force-check'] ) && current_user_can( 'update_plugins' ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- core's own link; only drops a cache.
+			self::forget();
+		}
 	}
 
 	/**
@@ -78,7 +166,8 @@ final class GitHubUpdater implements Service {
 			'version'      => $release['version'],
 			'url'          => $release['url'],
 			'package'      => $release['package'],
-			'requires_php' => '8.1',
+			'requires'     => $release['requires'],
+			'requires_php' => $release['requires_php'],
 		);
 	}
 
@@ -108,9 +197,12 @@ final class GitHubUpdater implements Service {
 			'author'        => '<a href="https://agencecinq.com">CINQ</a>',
 			'homepage'      => 'https://github.com/' . self::REPOSITORY,
 			'download_link' => $release['package'],
-			'requires_php'  => '8.1',
+			'requires'      => $release['requires'],
+			'requires_php'  => $release['requires_php'],
 			'sections'      => array(
-				'changelog' => wpautop( esc_html( $release['notes'] ) ),
+				'changelog' => '' === $release['notes']
+					? sprintf( '<p><a href="%s">%s</a></p>', esc_url( $release['url'] ), esc_html__( 'Release notes on GitHub', 'cinq-wp-mcp' ) )
+					: wpautop( esc_html( $release['notes'] ) ),
 			),
 		);
 	}
@@ -118,7 +210,7 @@ final class GitHubUpdater implements Service {
 	/**
 	 * Returns the latest release, from cache or from GitHub.
 	 *
-	 * @return array{version: string, url: string, package: string, notes: string}|null
+	 * @return array{version: string, url: string, package: string, notes: string, requires: string, requires_php: string}|null
 	 */
 	public static function latest(): ?array {
 		$cached = get_transient( self::TRANSIENT );
@@ -127,18 +219,8 @@ final class GitHubUpdater implements Service {
 			return empty( $cached['version'] ) ? null : $cached;
 		}
 
-		$response = wp_remote_get(
-			'https://api.github.com/repos/' . self::REPOSITORY . '/releases/latest',
-			array(
-				'timeout' => 10,
-				'headers' => array(
-					'Accept'     => 'application/vnd.github+json',
-					'User-Agent' => 'cinq-wp-mcp/' . VERSION,
-				),
-			)
-		);
-
-		$release = self::parse( is_wp_error( $response ) ? '' : (string) wp_remote_retrieve_body( $response ) );
+		$release = self::parse_manifest( self::fetch( 'https://github.com/' . self::REPOSITORY . '/releases/latest/download/' . self::MANIFEST ) )
+			?? self::parse( self::fetch( 'https://api.github.com/repos/' . self::REPOSITORY . '/releases/latest' ) );
 
 		// Remember failures too, for an hour, so a GitHub outage does not slow
 		// every admin page down.
@@ -148,10 +230,65 @@ final class GitHubUpdater implements Service {
 	}
 
 	/**
-	 * Reads a GitHub "latest release" response.
+	 * Downloads a URL, following GitHub's redirects to its file storage.
+	 *
+	 * @param string $url URL.
+	 * @return string Body, empty on any failure.
+	 */
+	private static function fetch( string $url ): string {
+		$response = wp_remote_get(
+			$url,
+			array(
+				'timeout' => 10,
+				'headers' => array(
+					'Accept'     => 'application/vnd.github+json, application/json',
+					'User-Agent' => 'cinq-wp-mcp/' . VERSION,
+				),
+			)
+		);
+
+		if ( is_wp_error( $response ) || 200 !== (int) wp_remote_retrieve_response_code( $response ) ) {
+			return '';
+		}
+
+		return (string) wp_remote_retrieve_body( $response );
+	}
+
+	/**
+	 * Reads the `update.json` attached to a release.
+	 *
+	 * @param string $body File contents.
+	 * @return array{version: string, url: string, package: string, notes: string, requires: string, requires_php: string}|null
+	 */
+	public static function parse_manifest( string $body ): ?array {
+		$data = json_decode( $body, true );
+
+		if ( ! is_array( $data ) || empty( $data['version'] ) || empty( $data['package'] ) ) {
+			return null;
+		}
+
+		$package = (string) $data['package'];
+
+		// Only ever install what this repository's releases serve.
+		if ( ! str_starts_with( $package, 'https://github.com/' . self::REPOSITORY . '/releases/download/' ) ) {
+			return null;
+		}
+
+		return array(
+			'version'      => ltrim( (string) $data['version'], 'vV' ),
+			'url'          => (string) ( $data['url'] ?? 'https://github.com/' . self::REPOSITORY . '/releases' ),
+			'package'      => $package,
+			'notes'        => (string) ( $data['notes'] ?? '' ),
+			'requires'     => (string) ( $data['requires'] ?? '' ),
+			'requires_php' => (string) ( $data['requires_php'] ?? '8.1' ),
+		);
+	}
+
+	/**
+	 * Reads a GitHub "latest release" API response.
 	 *
 	 * @param string $body Response body.
-	 * @return array{version: string, url: string, package: string, notes: string}|null
+	 * @return array{version: string, url: string, package: string, notes: string, requires: string, requires_php: string}|null
 	 */
 	public static function parse( string $body ): ?array {
 		$data = json_decode( $body, true );
@@ -175,10 +312,12 @@ final class GitHubUpdater implements Service {
 		}
 
 		return array(
-			'version' => ltrim( (string) $data['tag_name'], 'vV' ),
-			'url'     => (string) ( $data['html_url'] ?? 'https://github.com/' . self::REPOSITORY ),
-			'package' => $package,
-			'notes'   => (string) ( $data['body'] ?? '' ),
+			'version'      => ltrim( (string) $data['tag_name'], 'vV' ),
+			'url'          => (string) ( $data['html_url'] ?? 'https://github.com/' . self::REPOSITORY ),
+			'package'      => $package,
+			'notes'        => (string) ( $data['body'] ?? '' ),
+			'requires'     => '',
+			'requires_php' => '8.1',
 		);
 	}
 }

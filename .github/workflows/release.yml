@@ -1,7 +1,8 @@
 name: Release
 
-# Push a tag such as v1.2.0: the plugin zip is built and attached to a GitHub
-# release. Sites running the plugin are offered the update within twelve hours.
+# Push a tag such as v1.2.0: the plugin zip and its update.json manifest are
+# built and attached to a GitHub release. Sites running the plugin see the
+# update within twelve hours and install it on their own (auto-updates).
 
 on:
   push:
@@ -40,7 +41,22 @@ jobs:
           (cd build && zip -qr ../cinq-wp-mcp.zip cinq-wp-mcp)
           unzip -l cinq-wp-mcp.zip | tail -n 5
 
+      # Read by the plugin's updater: a plain download, not rate-limited like
+      # GitHub's API.
+      - name: Write the update manifest
+        run: |
+          jq -n \
+            --arg version "${GITHUB_REF_NAME#v}" \
+            --arg url "https://github.com/${GITHUB_REPOSITORY}/releases/tag/${GITHUB_REF_NAME}" \
+            --arg package "https://github.com/${GITHUB_REPOSITORY}/releases/download/${GITHUB_REF_NAME}/cinq-wp-mcp.zip" \
+            --arg requires "$(sed -n 's/^ \* Requires at least: *//p' cinq-wp-mcp.php)" \
+            --arg requires_php "$(sed -n 's/^ \* Requires PHP: *//p' cinq-wp-mcp.php)" \
+            '{version: $version, url: $url, package: $package, requires: $requires, requires_php: $requires_php}' > update.json
+          cat update.json
+
       - uses: softprops/action-gh-release@v2
         with:
-          files: cinq-wp-mcp.zip
+          files: |
+            cinq-wp-mcp.zip
+            update.json
           generate_release_notes: true
