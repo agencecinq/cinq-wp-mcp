@@ -82,6 +82,32 @@ final class LocationRules {
 	}
 
 	/**
+	 * Returns the taxonomies a location applies to.
+	 *
+	 * A taxonomy rule set to "all" yields every candidate.
+	 *
+	 * @param array<int, mixed>  $location   The group's `location` entry.
+	 * @param array<int, string> $candidates Taxonomies this plugin manages.
+	 * @return array<int, string> In the order of `$candidates`.
+	 */
+	public static function taxonomies( array $location, array $candidates ): array {
+		$matched = array();
+
+		foreach ( $location as $rule_group ) {
+			foreach ( (array) $rule_group as $rule ) {
+				$rule = (array) $rule;
+
+				if ( 'taxonomy' === ( $rule['param'] ?? '' ) && '==' === ( $rule['operator'] ?? '==' ) ) {
+					$value   = (string) ( $rule['value'] ?? '' );
+					$matched = array_merge( $matched, 'all' === $value ? $candidates : array( $value ) );
+				}
+			}
+		}
+
+		return array_values( array_intersect( $candidates, $matched ) );
+	}
+
+	/**
 	 * Decides which page template a post needs for a location to apply.
 	 *
 	 * Returns null when the current template already satisfies a rule group,

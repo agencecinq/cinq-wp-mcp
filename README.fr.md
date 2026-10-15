@@ -102,7 +102,9 @@ compte partagé.
 **Zones.** Chaque champ flexible ACF est une *zone*, nommée par le chemin des champs qui y
 mène : `blocks` sur les pages, `archive_posts.blocks` dans la page d'options de l'archive du
 blog. Une zone s'applique là où les règles d'emplacement de son groupe le disent. La zone
-*principale* d'un type de contenu est celle où écrit l'argument `blocks`.
+*principale* d'un type de contenu est celle où écrit l'argument `blocks`. Une zone portée par
+les termes d'une taxonomie est préfixée par celle-ci, `destination:blocks`, pour ne jamais
+masquer la zone des pages du même nom.
 
 **Blocs réservés.** Quand le thème masque un layout sur un type de contenu via
 `acf/prepare_field`, le plugin pose la même question au thème et refuse l'écriture en disant

@@ -107,7 +107,8 @@ curl -H 'X-Api-Key: LOGIN:APPLICATION PASSWORD' -H 'Content-Type: application/js
 field names that leads to it: `blocks` on pages, `archive_posts.blocks` inside the blog
 archive's options page. A zone applies where its field group's location rules say. The
 *primary* zone of a content type is the one its `blocks` argument writes to — the root zone
-named `blocks` when there is one.
+named `blocks` when there is one. A zone on a taxonomy's terms is prefixed with the taxonomy,
+`destination:blocks`, so that it never shadows the page zone of the same name.
 
 **Layouts reserved for a content type.** When the theme hides a layout on some content type
 through `acf/prepare_field` (as the editor would), the plugin asks the theme the same
@@ -128,17 +129,18 @@ Names take the configured prefix (`site-` by default).
 
 | Tool | |
 |---|---|
-| `list-block-types` | zones and their block types, per content type or options page |
+| `list-block-types` | zones and their block types, per content type, options page or taxonomy |
 | `get-block-schema` | JSON Schema of block types |
 | `list-page-templates` | design templates as block stacks (only when the theme declares some) |
 | `get-content-schema` | the fields a content type owns outside its zones |
 | `list-content` · `get-content` | find and read content, blocks included, in the write shape |
 | `create-content` · `update-content` | create or update, blocks and fields included |
-| `edit-blocks` | append, insert, replace, update, move, remove one block — on a post or an options page |
+| `edit-blocks` | append, insert, replace, update, move, remove one block — on a post, an options page or a term |
 | `delete-content` | trash, restore, delete |
 | `search-media` · `upload-media` | media library |
 | `list-terms` | taxonomy terms |
 | `list-options-pages` · `get-options` · `update-options` | ACF options pages (when the theme has some) |
+| `get-term` · `update-term` | a term and the ACF fields of its archive page; terms have no draft, a save is live |
 | `list-menus` · `get-menu` · `update-menu` · `assign-menu-locations` | navigation menus; item IDs are kept on update |
 
 The SEO title and description are written through Yoast, Rank Math or SEOPress, whichever is
@@ -164,6 +166,7 @@ is ignored whole and its errors are shown in the admin.
 		"postTypes": { "exclude": ["styleguide"] },
 		"zones": { "labels": { "archive_posts.blocks": "Blog archive" } },
 		"optionsPages": { "include": ["options-theme", "archive-post"] },
+		"taxonomies": { "exclude": ["post_tag"] },
 		"menus": { "locations": ["main", "footer"] },
 		"pageTemplate": "auto",
 		"seo": "auto",
@@ -192,6 +195,9 @@ is ignored whole and its errors are shown in the admin.
   editorial rules for the AI go.
 - `settings.postTypes` filters the public content types. A private type that has an admin
   screen (a catalog, a list of settings records) is reachable once named in `include`.
+- `settings.taxonomies` filters the public taxonomies whose terms `get-term`, `update-term`
+  and `edit-blocks` reach. A private taxonomy that has an admin screen is reachable once
+  named in `include`.
 - `blocks.<layout>` annotates a layout (`description`, `guidance`) or hides it (`hidden`).
 - `templates` can also live one per file in `mcp/templates/<name>.json`. Section statuses:
   `exact` (the block is the section), `approx` (nearest block), `theme` (rendered outside

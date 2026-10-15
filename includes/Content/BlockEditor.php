@@ -39,7 +39,7 @@ final class BlockEditor {
 	/**
 	 * Applies operations to the blocks of a zone.
 	 *
-	 * @param Target                           $target       Post or options page.
+	 * @param Target                           $target       Post, options page or term.
 	 * @param string                           $zone_id      Zone, or '' for the target's default one.
 	 * @param array<int, array<string, mixed>> $operations   Operations to apply.
 	 * @param bool                             $import_media Whether URLs may be sideloaded.

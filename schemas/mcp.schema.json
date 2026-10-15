@@ -40,7 +40,7 @@
 				"zones": {
 					"type": "object",
 					"additionalProperties": false,
-					"description": "Block zones: every ACF flexible content field, by dotted path (\"blocks\", \"archive_posts.blocks\").",
+					"description": "Block zones: every ACF flexible content field, by dotted path (\"blocks\", \"archive_posts.blocks\"), prefixed with the taxonomy on terms (\"destination:blocks\").",
 					"properties": {
 						"include": { "$ref": "#/definitions/strings" },
 						"exclude": { "$ref": "#/definitions/strings" },
@@ -57,6 +57,7 @@
 					"description": "\"auto\" assigns the page template the zone's location rules require, if any. \"none\" never touches it. A template path is assigned to any page without one that receives blocks."
 				},
 				"optionsPages": { "$ref": "#/definitions/filter", "description": "ACF options pages the tools can reach, by menu slug. Defaults to all." },
+				"taxonomies": { "$ref": "#/definitions/filter", "description": "Taxonomies whose terms the tools can read and write, fields and block zones included. Defaults to the public ones; a private taxonomy with an admin screen is reachable once named in include." },
 				"menus": {
 					"type": "object",
 					"additionalProperties": false,

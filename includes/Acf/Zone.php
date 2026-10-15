@@ -19,6 +19,10 @@ defined( 'ABSPATH' ) || exit;
  * page and another inside the blog archive's options page; a client site can
  * add a third on a custom post type. Each of those is a zone, identified by the
  * dotted path of field names that leads to it: `blocks`, `archive_posts.blocks`.
+ *
+ * A zone on a taxonomy's terms is prefixed with the taxonomy, `destination:blocks`:
+ * term field groups often reuse the name of the page zone, and both must stay
+ * reachable.
  */
 final class Zone {
 
@@ -38,6 +42,7 @@ final class Zone {
 	 * @param array<int, string>   $post_types    Post types it can apply to.
 	 * @param array<int, string>   $options_pages Options pages it applies to.
 	 * @param string               $label         Label shown to clients.
+	 * @param array<int, string>   $taxonomies    Taxonomies whose terms hold it.
 	 */
 	public function __construct(
 		public readonly string $id,
@@ -45,8 +50,20 @@ final class Zone {
 		public readonly array $group,
 		public readonly array $post_types,
 		public readonly array $options_pages,
-		public readonly string $label
+		public readonly string $label,
+		public readonly array $taxonomies = array()
 	) {}
+
+	/**
+	 * Returns the dotted path of field names, the id without its taxonomy.
+	 *
+	 * @return string
+	 */
+	public function path(): string {
+		$position = strpos( $this->id, ':' );
+
+		return false === $position ? $this->id : substr( $this->id, $position + 1 );
+	}
 
 	/**
 	 * Returns the field's own name, the last segment of the path.
@@ -54,7 +71,7 @@ final class Zone {
 	 * @return string
 	 */
 	public function name(): string {
-		$segments = explode( '.', $this->id );
+		$segments = explode( '.', $this->path() );
 
 		return (string) end( $segments );
 	}
@@ -74,7 +91,7 @@ final class Zone {
 	 * @return bool
 	 */
 	public function is_top_level(): bool {
-		return ! str_contains( $this->id, '.' );
+		return ! str_contains( $this->path(), '.' );
 	}
 
 	/**
@@ -86,7 +103,7 @@ final class Zone {
 	 * @return string
 	 */
 	public function meta_name(): string {
-		return str_replace( '.', '_', $this->id );
+		return str_replace( '.', '_', $this->path() );
 	}
 
 	/**
@@ -167,6 +184,16 @@ final class Zone {
 	 */
 	public function applies_to_options_page( string $slug ): bool {
 		return in_array( $slug, $this->options_pages, true );
+	}
+
+	/**
+	 * Returns whether the zone belongs to the terms of a taxonomy.
+	 *
+	 * @param string $taxonomy Taxonomy slug.
+	 * @return bool
+	 */
+	public function applies_to_taxonomy( string $taxonomy ): bool {
+		return in_array( $taxonomy, $this->taxonomies, true );
 	}
 
 	/**

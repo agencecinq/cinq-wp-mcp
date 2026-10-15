@@ -117,6 +117,7 @@ final class Registrar implements Service {
 			Content::definitions(),
 			Library::definitions(),
 			Options::definitions(),
+			Terms::definitions(),
 			Menus::definitions()
 		);
 

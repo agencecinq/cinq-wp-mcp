@@ -79,6 +79,10 @@ final class ConfigResolver {
 					'include' => array(),
 					'exclude' => array(),
 				),
+				'taxonomies'   => array(
+					'include' => array(),
+					'exclude' => array(),
+				),
 				'menus'        => array(
 					'enabled'   => true,
 					'locations' => array(),

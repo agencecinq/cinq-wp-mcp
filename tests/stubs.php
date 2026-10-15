@@ -82,6 +82,15 @@ final class World {
 	/** @var array<string, int> Menu assigned per location. */
 	public static array $assigned_menus = array();
 
+	/** @var array<int, string> Public taxonomies with an admin screen. */
+	public static array $taxonomies = array( 'category', 'post_tag' );
+
+	/** @var array<int, string> Private taxonomies with an admin screen. */
+	public static array $admin_taxonomies = array();
+
+	/** @var array<int, array<string, mixed>> Terms keyed by ID. */
+	public static array $terms = array();
+
 	/** @var array<string, int> Wrapper so `instanceof` works on posts. */
 	public static array $by_type = array();
 
@@ -93,7 +102,9 @@ final class World {
 	public static function reset(): void {
 		self::$groups = self::$fields = self::$options_pages = self::$values = self::$posts = self::$meta = array();
 		self::$options = self::$transients = self::$filters = self::$form = self::$page_templates = array();
-		self::$menu_locations = self::$assigned_menus = self::$by_type = array();
+		self::$menu_locations = self::$assigned_menus = self::$by_type = self::$terms = array();
+		self::$taxonomies     = array( 'category', 'post_tag' );
+		self::$admin_taxonomies = array();
 		self::$flexible       = true;
 		self::$post_types     = array( 'page', 'post' );
 		self::$admin_post_types = array();
@@ -197,6 +208,11 @@ function acf_get_field_groups( array $args = array() ): array {
 	$matched = array();
 
 	foreach ( World::$groups as $group ) {
+		// ACF leaves an inactive group out of any filtered query.
+		if ( isset( $group['active'] ) && ! $group['active'] ) {
+			continue;
+		}
+
 		$location = (array) ( $group['location'] ?? array() );
 
 		if ( empty( $location ) ) {
@@ -220,6 +236,9 @@ function acf_get_field_groups( array $args = array() ): array {
 						break;
 					case 'post_type':
 						$result = ( $args['post_type'] ?? null ) === $value;
+						break;
+					case 'taxonomy':
+						$result = isset( $args['taxonomy'] ) && ( 'all' === $value || $args['taxonomy'] === $value );
 						break;
 					case 'page_template':
 						$current = (string) ( isset( $args['post_id'] ) ? get_post_meta( $args['post_id'], '_wp_page_template', true ) : '' );
@@ -514,7 +533,41 @@ function get_term( $term_id, string $taxonomy = '' ) {
 	$term          = new WP_Term();
 	$term->term_id = (int) $term_id;
 
+	foreach ( World::$terms[ (int) $term_id ] ?? array() as $key => $value ) {
+		$term->$key = $value;
+	}
+
 	return $term;
+}
+
+function get_taxonomies( array $args = array(), string $output = 'names' ): array {
+	return array_combine( World::$taxonomies, World::$taxonomies );
+}
+
+function get_taxonomy( string $taxonomy ) {
+	if ( ! in_array( $taxonomy, array_merge( World::$taxonomies, World::$admin_taxonomies ), true ) ) {
+		return false;
+	}
+
+	$object          = new stdClass();
+	$object->name    = $taxonomy;
+	$object->show_ui = true;
+
+	return $object;
+}
+
+function get_term_link( $term, string $taxonomy = '' ) {
+	return 'https://example.test/' . $term->taxonomy . '/' . $term->slug . '/';
+}
+
+function wp_update_term( int $term_id, string $taxonomy, array $args = array() ) {
+	if ( isset( $args['slug'] ) && 'taken' === $args['slug'] ) {
+		return new WP_Error( 'duplicate_term_slug', 'The slug "taken" is already in use.' );
+	}
+
+	World::$terms[ $term_id ] = array_merge( World::$terms[ $term_id ] ?? array(), $args );
+
+	return array( 'term_id' => $term_id, 'term_taxonomy_id' => $term_id );
 }
 
 function get_term_by( string $field, string $value, string $taxonomy = '' ) {
@@ -591,6 +644,12 @@ class WP_Post {
 
 class WP_Term {
 	public int $term_id = 0;
+	public string $taxonomy = '';
+	public string $name = '';
+	public string $slug = '';
+	public string $description = '';
+	public int $parent = 0;
+	public int $count = 0;
 }
 
 /**

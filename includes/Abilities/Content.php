@@ -368,21 +368,25 @@ final class Content {
 	private static function edit_blocks(): array {
 		return array(
 			'label'               => __( 'Edit blocks', 'cinq-wp-mcp' ),
-			'description'         => sprintf( 'Changes the blocks of one zone one operation at a time — append, prepend, insert, replace, update, remove, move — leaving every other block untouched. Works on a post ("id") or on an options page ("options_page"). Indexes are zero-based and come from %s or %s. Operations apply in order, and nothing is saved unless all of them validate.', Registrar::tool( 'get-content' ), Registrar::tool( 'get-options' ) ),
+			'description'         => sprintf( 'Changes the blocks of one zone one operation at a time — append, prepend, insert, replace, update, remove, move — leaving every other block untouched. Works on a post ("id"), an options page ("options_page") or a term ("term_id"). Indexes are zero-based and come from %s, %s or %s. Operations apply in order, and nothing is saved unless all of them validate.', Registrar::tool( 'get-content' ), Registrar::tool( 'get-options' ), Registrar::tool( 'get-term' ) ),
 			'input_schema'        => array(
 				'type'       => 'object',
 				'properties' => array(
 					'id'           => array(
 						'type'        => 'integer',
-						'description' => 'Post ID. Pass this or "options_page".',
+						'description' => 'Post ID. Pass this, "options_page" or "term_id".',
 					),
 					'options_page' => array(
 						'type'        => 'string',
 						'description' => 'Options page menu slug, to edit a zone that lives on an options page.',
 					),
+					'term_id'      => array(
+						'type'        => 'integer',
+						'description' => 'Term ID, to edit a zone that lives on a term\'s archive page.',
+					),
 					'zone'         => array(
 						'type'        => 'string',
-						'description' => 'Zone to edit. Defaults to the post type\'s primary zone, or to the options page\'s only zone.',
+						'description' => 'Zone to edit. Defaults to the post type\'s primary zone, or to the only zone of the options page or the term.',
 					),
 					'operations'   => array(
 						'type'        => 'array',
@@ -428,6 +432,7 @@ final class Content {
 					array(
 						'post_id'      => $input['id'] ?? 0,
 						'options_page' => $input['options_page'] ?? '',
+						'term_id'      => $input['term_id'] ?? 0,
 					)
 				);
 
@@ -446,9 +451,14 @@ final class Content {
 				$input   = is_array( $input ) ? $input : array();
 				$post_id = (int) ( $input['id'] ?? 0 );
 				$page    = (string) ( $input['options_page'] ?? '' );
+				$term_id = (int) ( $input['term_id'] ?? 0 );
 
 				if ( '' !== $page ) {
 					return current_user_can( OptionsRepository::capability( $page ) );
+				}
+
+				if ( $term_id > 0 ) {
+					return current_user_can( 'edit_term', $term_id );
 				}
 
 				return $post_id > 0 && current_user_can( 'edit_post', $post_id );

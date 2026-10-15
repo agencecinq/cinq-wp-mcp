@@ -11,6 +11,7 @@ declare( strict_types = 1 );
 namespace CinqWpMcp\Abilities;
 
 use CinqWpMcp\Content\MediaRepository;
+use CinqWpMcp\Terms\TermsRepository;
 use WP_Error;
 
 defined( 'ABSPATH' ) || exit;
@@ -127,7 +128,8 @@ final class Library {
 	private static function list_terms(): array {
 		return array(
 			'label'               => __( 'List terms', 'cinq-wp-mcp' ),
-			'description'         => 'Lists the terms of a taxonomy — categories, tags, custom taxonomies — so blocks and content can reference existing ones by ID or slug.',
+			'description'         => 'Lists the terms of a taxonomy — categories, tags, custom taxonomies — so blocks and content can reference existing ones by ID or slug.'
+				. ( empty( TermsRepository::taxonomies() ) ? '' : sprintf( ' Read and edit a term\'s archive page with %s and %s.', Registrar::tool( 'get-term' ), Registrar::tool( 'update-term' ) ) ),
 			'input_schema'        => array(
 				'type'       => 'object',
 				'properties' => array(

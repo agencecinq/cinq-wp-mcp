@@ -76,7 +76,7 @@ final class Discovery {
 		return array(
 			'label'               => __( 'List block types', 'cinq-wp-mcp' ),
 			'description'         => sprintf(
-				'Lists the block zones of the site — the places a stack of blocks can go, on a content type or an options page — and the block types each one accepts, with their top-level fields. Start here before building or editing a page, then call %s for the blocks you intend to use. Pass the post type you are writing to: some blocks are reserved for one content type, and one used elsewhere is refused at write time.',
+				'Lists the block zones of the site — the places a stack of blocks can go, on a content type, an options page or the terms of a taxonomy — and the block types each one accepts, with their top-level fields. Start here before building or editing a page, then call %s for the blocks you intend to use. Pass the post type you are writing to: some blocks are reserved for one content type, and one used elsewhere is refused at write time.',
 				Registrar::tool( 'get-block-schema' )
 			),
 			'input_schema'        => array(
@@ -89,6 +89,10 @@ final class Discovery {
 					'options_page' => array(
 						'type'        => 'string',
 						'description' => 'Only the zones of this options page.',
+					),
+					'taxonomy'     => array(
+						'type'        => 'string',
+						'description' => 'Only the zones on the terms of this taxonomy.',
 					),
 					'zone'         => array(
 						'type'        => 'string',
@@ -106,6 +110,7 @@ final class Discovery {
 			'execute_callback'    => static function ( array $input ): array {
 				$post_type    = trim( (string) ( $input['post_type'] ?? '' ) );
 				$options_page = trim( (string) ( $input['options_page'] ?? '' ) );
+				$taxonomy     = trim( (string) ( $input['taxonomy'] ?? '' ) );
 				$zone_id      = trim( (string) ( $input['zone'] ?? '' ) );
 
 				if ( '' !== $zone_id ) {
@@ -114,6 +119,8 @@ final class Discovery {
 					$zones = ZoneRegistry::for_post_type( $post_type );
 				} elseif ( '' !== $options_page ) {
 					$zones = ZoneRegistry::for_options_page( $options_page );
+				} elseif ( '' !== $taxonomy ) {
+					$zones = ZoneRegistry::for_taxonomy( $taxonomy );
 				} else {
 					$zones = ZoneRegistry::all();
 				}
@@ -128,6 +135,7 @@ final class Discovery {
 						'label'         => $zone->label,
 						'post_types'    => $zone->post_types,
 						'options_pages' => $zone->options_pages,
+						'taxonomies'    => $zone->taxonomies,
 					);
 
 					if ( null !== $primary ) {

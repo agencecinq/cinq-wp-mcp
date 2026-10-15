@@ -106,7 +106,7 @@ final class ConfigValidator {
 	 * @return void
 	 */
 	private function check_settings( array $settings ): void {
-		$this->only_keys( $settings, 'settings', array( 'server', 'postTypes', 'zones', 'pageTemplate', 'optionsPages', 'menus', 'seo', 'oauth' ) );
+		$this->only_keys( $settings, 'settings', array( 'server', 'postTypes', 'zones', 'pageTemplate', 'optionsPages', 'taxonomies', 'menus', 'seo', 'oauth' ) );
 
 		if ( isset( $settings['server'] ) && $this->object( $settings['server'], 'settings.server' ) ) {
 			$server = $settings['server'];
@@ -120,7 +120,7 @@ final class ConfigValidator {
 			}
 		}
 
-		foreach ( array( 'postTypes', 'optionsPages' ) as $key ) {
+		foreach ( array( 'postTypes', 'optionsPages', 'taxonomies' ) as $key ) {
 			if ( isset( $settings[ $key ] ) && $this->object( $settings[ $key ], 'settings.' . $key ) ) {
 				$this->only_keys( $settings[ $key ], 'settings.' . $key, array( 'include', 'exclude' ) );
 				$this->string_list( $settings[ $key ], 'include', 'settings.' . $key );

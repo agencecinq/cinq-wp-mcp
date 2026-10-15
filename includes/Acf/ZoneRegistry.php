@@ -11,6 +11,7 @@ declare( strict_types = 1 );
 namespace CinqWpMcp\Acf;
 
 use CinqWpMcp\Config\Config;
+use CinqWpMcp\Terms\TermsRepository;
 use WP_Error;
 
 defined( 'ABSPATH' ) || exit;
@@ -100,6 +101,16 @@ final class ZoneRegistry {
 	 */
 	public static function for_options_page( string $slug ): array {
 		return array_filter( self::all(), static fn( Zone $zone ): bool => $zone->applies_to_options_page( $slug ) );
+	}
+
+	/**
+	 * Returns the zones on the terms of a taxonomy.
+	 *
+	 * @param string $taxonomy Taxonomy slug.
+	 * @return array<string, Zone>
+	 */
+	public static function for_taxonomy( string $taxonomy ): array {
+		return array_filter( self::all(), static fn( Zone $zone ): bool => $zone->applies_to_taxonomy( $taxonomy ) );
 	}
 
 	/**
@@ -193,6 +204,40 @@ final class ZoneRegistry {
 		return $zones[ $zone_id ] ?? new WP_Error(
 			'cinq_wp_mcp_unknown_zone',
 			sprintf( 'No block zone "%s" on the options page "%s". Available: %s.', $zone_id, $slug, implode( ', ', array_keys( $zones ) ) )
+		);
+	}
+
+	/**
+	 * Resolves the zone a write on a term targets.
+	 *
+	 * @param string $taxonomy Taxonomy slug.
+	 * @param string $zone_id  Requested zone, or '' when the terms have only one.
+	 * @return Zone|WP_Error
+	 */
+	public static function resolve_for_taxonomy( string $taxonomy, string $zone_id = '' ) {
+		$zones = self::for_taxonomy( $taxonomy );
+
+		if ( empty( $zones ) ) {
+			return new WP_Error(
+				'cinq_wp_mcp_blocks_unsupported',
+				sprintf( 'The terms of "%s" have no block zone.', $taxonomy )
+			);
+		}
+
+		if ( '' === $zone_id ) {
+			if ( count( $zones ) > 1 ) {
+				return new WP_Error(
+					'cinq_wp_mcp_ambiguous_zone',
+					sprintf( 'The terms of "%s" have several block zones; pass "zone". Available: %s.', $taxonomy, implode( ', ', array_keys( $zones ) ) )
+				);
+			}
+
+			return reset( $zones );
+		}
+
+		return $zones[ $zone_id ] ?? new WP_Error(
+			'cinq_wp_mcp_unknown_zone',
+			sprintf( 'No block zone "%s" on the terms of "%s". Available: %s.', $zone_id, $taxonomy, implode( ', ', array_keys( $zones ) ) )
 		);
 	}
 
@@ -442,6 +487,7 @@ final class ZoneRegistry {
 		}
 
 		$registrable = array_keys( self::registrable_post_types() );
+		$taxonomies  = TermsRepository::taxonomies();
 		$labels      = (array) Config::get( 'settings.zones.labels', array() );
 		$found       = array();
 
@@ -456,39 +502,56 @@ final class ZoneRegistry {
 				continue;
 			}
 
-			foreach ( self::flexible_fields( FieldResolver::resolve( $fields ), '' ) as $id => $field ) {
-				// The first group to claim an id wins, as ACF's own name lookup does.
-				if ( isset( $found[ $id ] ) ) {
-					continue;
+			$location      = (array) ( $group['location'] ?? array() );
+			$options_pages = Config::filter( 'settings.optionsPages', LocationRules::options_pages( $location ) );
+			$post_types    = LocationRules::post_types( $location, $registrable );
+			$term_scopes   = LocationRules::taxonomies( $location, $taxonomies );
+
+			// A group that only targets options pages yields no post types;
+			// one with no location at all applies to every post type.
+			if ( empty( $location ) ) {
+				$options_pages = array();
+			}
+
+			foreach ( self::flexible_fields( FieldResolver::resolve( $fields ), '' ) as $path => $field ) {
+				$ids = array_map( static fn( string $taxonomy ): string => $taxonomy . ':' . $path, $term_scopes );
+
+				// A group scoped to terms only claims no plain id: the page
+				// zone of the same name must stay reachable.
+				if ( ! empty( $post_types ) || ! empty( $options_pages ) || empty( $term_scopes ) ) {
+					array_unshift( $ids, $path );
 				}
 
-				$location      = (array) ( $group['location'] ?? array() );
-				$options_pages = Config::filter( 'settings.optionsPages', LocationRules::options_pages( $location ) );
-				$post_types    = LocationRules::post_types( $location, $registrable );
+				foreach ( $ids as $id ) {
+					// The first group to claim an id wins, as ACF's own name lookup does.
+					if ( isset( $found[ $id ] ) ) {
+						continue;
+					}
 
-				// A group that only targets options pages yields no post types;
-				// one with no location at all applies to every post type.
-				if ( empty( $location ) ) {
-					$options_pages = array();
+					$label = is_string( $labels[ $id ] ?? null )
+						? $labels[ $id ]
+						: (string) ( $field['label'] ?? $id );
+
+					$found[ $id ] = $id === $path
+						? new Zone( $id, $field, $group, $post_types, $options_pages, $label )
+						: new Zone( $id, $field, $group, array(), array(), $label, array( strstr( $id, ':', true ) ) );
 				}
-
-				$label = is_string( $labels[ $id ] ?? null )
-					? $labels[ $id ]
-					: (string) ( $field['label'] ?? $id );
-
-				$found[ $id ] = new Zone( $id, $field, $group, $post_types, $options_pages, $label );
 			}
 		}
 
 		$kept  = Config::filter( 'settings.zones', array_keys( $found ) );
 		$found = array_intersect_key( $found, array_flip( $kept ) );
 
-		// Content zones first, options pages after, each in registration
-		// order: what a client reads first is where pages are built.
+		// Content zones first, options pages next, terms last, each in
+		// registration order: what a client reads first is where pages are built.
 		uksort(
 			$found,
 			static function ( string $a, string $b ) use ( $found ): int {
-				$rank = static fn( Zone $zone ): int => empty( $zone->post_types ) ? 1 : 0;
+				$rank = static fn( Zone $zone ): int => match ( true ) {
+					! empty( $zone->post_types ) => 0,
+					empty( $zone->taxonomies ) => 1,
+					default => 2,
+				};
 
 				return $rank( $found[ $a ] ) <=> $rank( $found[ $b ] );
 			}

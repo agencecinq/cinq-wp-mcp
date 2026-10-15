@@ -23,7 +23,7 @@ defined( 'ABSPATH' ) || exit;
  * to its meta name, which is what `get_field()` and `update_field()` do for a
  * root field and what ACF itself does for a sub field: `archive_posts.blocks`
  * is stored as `archive_posts_blocks`. One code path then serves root zones,
- * nested ones, posts and options pages alike.
+ * nested ones, posts, options pages and terms alike.
  */
 final class ZoneStore {
 
@@ -34,7 +34,7 @@ final class ZoneStore {
 	 * back in: images stay attachment IDs, links stay `{url, title, target}`.
 	 *
 	 * @param Zone   $zone   Zone.
-	 * @param Target $target Post or options page.
+	 * @param Target $target Post, options page or term.
 	 * @return array<int, array<string, mixed>>
 	 */
 	public static function read( Zone $zone, Target $target ): array {
@@ -45,7 +45,7 @@ final class ZoneStore {
 	 * Returns the number of blocks stored in a zone.
 	 *
 	 * @param Zone   $zone   Zone.
-	 * @param Target $target Post or options page.
+	 * @param Target $target Post, options page or term.
 	 * @return int
 	 */
 	public static function count( Zone $zone, Target $target ): int {
@@ -56,7 +56,7 @@ final class ZoneStore {
 	 * Writes the blocks of a zone, then checks they landed.
 	 *
 	 * @param Zone                             $zone   Zone.
-	 * @param Target                           $target Post or options page.
+	 * @param Target                           $target Post, options page or term.
 	 * @param array<int, array<string, mixed>> $blocks Mapped ACF rows.
 	 * @return true|WP_Error
 	 */
@@ -98,7 +98,7 @@ final class ZoneStore {
 	 * Returns the stored rows, unformatted.
 	 *
 	 * @param Zone   $zone   Zone.
-	 * @param Target $target Post or options page.
+	 * @param Target $target Post, options page or term.
 	 * @return array<int, mixed>
 	 */
 	private static function read_raw( Zone $zone, Target $target ): array {
