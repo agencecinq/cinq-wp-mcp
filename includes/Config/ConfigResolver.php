@@ -126,6 +126,8 @@ final class ConfigResolver {
 			 * Return a partial config: it is merged over the theme files and
 			 * under the admin overrides.
 			 *
+			 * @since 1.0.0
+			 *
 			 * @param array<string, mixed> $config Partial config. Empty by default.
 			 */
 			$filtered = apply_filters( 'cinq_wp_mcp_config', array() );
