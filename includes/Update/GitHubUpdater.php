@@ -85,6 +85,8 @@ final class GitHubUpdater implements Service {
 		/**
 		 * Filters whether WordPress installs new releases of the plugin on its own.
 		 *
+		 * @since 1.1.0
+		 *
 		 * @param bool $enabled Default true.
 		 */
 		return (bool) apply_filters( 'cinq_wp_mcp_auto_update', true );
