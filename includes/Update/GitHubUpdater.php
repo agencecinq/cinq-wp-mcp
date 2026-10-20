@@ -96,7 +96,7 @@ final class GitHubUpdater implements Service {
 	 * Unpacks an update into the folder the plugin already lives in.
 	 *
 	 * The zip unpacks into `cinq-wp-mcp/`. A copy installed under another name
-	 * (a clone, a renamed folder) would otherwise come back under that one, and
+	 * (a renamed folder) would otherwise come back under that one, and
 	 * WordPress would deactivate the plugin it can no longer find.
 	 *
 	 * @param string|\WP_Error     $source        Unpacked folder.
@@ -152,6 +152,11 @@ final class GitHubUpdater implements Service {
 	 */
 	public function check( $update, $plugin_data, $plugin_file ) {
 		if ( plugin_basename( PLUGIN_FILE ) !== $plugin_file ) {
+			return $update;
+		}
+
+		// Updating replaces the plugin folder: never offer it over a Git working copy.
+		if ( is_dir( dirname( PLUGIN_FILE ) . '/.git' ) ) {
 			return $update;
 		}
 

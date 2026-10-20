@@ -43,7 +43,8 @@ Les mises à jour arrivent depuis les releases GitHub et s'installent seules : l
 `Update URI` pointe sur ce dépôt, WordPress voit chaque nouvelle version dans les douze heures
 et l'installe avec ses mises à jour automatiques. *Tableau de bord → Mises à jour → Vérifier à
 nouveau* regarde tout de suite. Pour garder la main sur un site, renvoyer false au filtre
-`cinq_wp_mcp_auto_update`.
+`cinq_wp_mcp_auto_update`. Aucune mise à jour n'est proposée quand le dossier du plugin est une
+copie de travail Git, puisque la mise à jour remplace tout le dossier.
 
 **Réglages → CINQ WP MCP** montre l'adresse du serveur, ce que le plugin a trouvé dans le
 thème, d'où vient la configuration, et les applications connectées.
