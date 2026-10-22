@@ -75,9 +75,7 @@ final class ValueMapper {
 	public function __construct( bool $import_media = true ) {
 		$this->import_media = $import_media;
 
-		if ( class_exists( Registrar::class ) ) {
-			$this->list_tool = Registrar::tool( 'list-block-types' );
-		}
+		$this->list_tool = Registrar::tool( 'list-block-types' );
 	}
 
 	/**

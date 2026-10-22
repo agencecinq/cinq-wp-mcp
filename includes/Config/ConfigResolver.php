@@ -61,7 +61,7 @@ final class ConfigResolver {
 			'version'   => self::VERSION,
 			'settings'  => array(
 				'server'       => array(
-					'title'        => function_exists( 'get_bloginfo' ) ? (string) get_bloginfo( 'name' ) : '',
+					'title'        => (string) get_bloginfo( 'name' ),
 					'instructions' => '',
 					'toolPrefix'   => 'site',
 				),
@@ -108,8 +108,8 @@ final class ConfigResolver {
 			self::layer( 'default', '', self::defaults(), array() ),
 		);
 
-		$parent = function_exists( 'get_template_directory' ) ? (string) get_template_directory() : '';
-		$child  = function_exists( 'get_stylesheet_directory' ) ? (string) get_stylesheet_directory() : '';
+		$parent = (string) get_template_directory();
+		$child  = (string) get_stylesheet_directory();
 
 		if ( '' !== $parent ) {
 			$layers[] = self::theme_layer( 'theme', $parent );
@@ -119,25 +119,23 @@ final class ConfigResolver {
 			$layers[] = self::theme_layer( 'child', $child );
 		}
 
-		if ( function_exists( 'apply_filters' ) ) {
-			/**
-			 * Filters the site configuration contributed by code.
-			 *
-			 * Return a partial config: it is merged over the theme files and
-			 * under the admin overrides.
-			 *
-			 * @since 1.0.0
-			 *
-			 * @param array<string, mixed> $config Partial config. Empty by default.
-			 */
-			$filtered = apply_filters( 'cinq_wp_mcp_config', array() );
+		/**
+		 * Filters the site configuration contributed by code.
+		 *
+		 * Return a partial config: it is merged over the theme files and
+		 * under the admin overrides.
+		 *
+		 * @since 1.0.0
+		 *
+		 * @param array<string, mixed> $config Partial config. Empty by default.
+		 */
+		$filtered = apply_filters( 'cinq_wp_mcp_config', array() );
 
-			if ( is_array( $filtered ) && ! empty( $filtered ) ) {
-				$layers[] = self::layer( 'filter', '', $filtered, ConfigValidator::validate( $filtered ) );
-			}
+		if ( is_array( $filtered ) && ! empty( $filtered ) ) {
+			$layers[] = self::layer( 'filter', '', $filtered, ConfigValidator::validate( $filtered ) );
 		}
 
-		$overrides = function_exists( 'get_option' ) ? (string) get_option( self::OVERRIDES_OPTION, '' ) : '';
+		$overrides = (string) get_option( self::OVERRIDES_OPTION, '' );
 
 		if ( '' !== trim( $overrides ) ) {
 			$decoded  = self::decode( $overrides, 'admin' );

@@ -76,10 +76,6 @@ final class Registrar implements Service {
 	 * @return void
 	 */
 	public function register_category(): void {
-		if ( ! function_exists( 'wp_register_ability_category' ) ) {
-			return;
-		}
-
 		$title = (string) Config::get( 'settings.server.title', '' );
 
 		wp_register_ability_category(
@@ -97,10 +93,6 @@ final class Registrar implements Service {
 	 * @return void
 	 */
 	public function register_abilities(): void {
-		if ( ! function_exists( 'wp_register_ability' ) ) {
-			return;
-		}
-
 		foreach ( self::definitions() as $name => $definition ) {
 			wp_register_ability( $name, $definition );
 		}

@@ -61,17 +61,8 @@ final class ZoneStore {
 	 * @return true|WP_Error
 	 */
 	public static function write( Zone $zone, Target $target, array $blocks ) {
-		if ( function_exists( 'acf_update_value' ) ) {
-			acf_update_value( $blocks, $target->acf_id, $zone->storage_field() );
-		} elseif ( function_exists( 'update_field' ) ) {
-			update_field( $zone->key(), $blocks, $target->acf_id );
-		} else {
-			return new WP_Error( 'cinq_wp_mcp_acf_missing', 'Advanced Custom Fields is not available.' );
-		}
-
-		if ( function_exists( 'acf_flush_value_cache' ) ) {
-			acf_flush_value_cache( $target->acf_id, $zone->meta_name() );
-		}
+		acf_update_value( $blocks, $target->acf_id, $zone->storage_field() );
+		acf_flush_value_cache( $target->acf_id, $zone->meta_name() );
 
 		$stored = self::count( $zone, $target );
 
@@ -102,13 +93,7 @@ final class ZoneStore {
 	 * @return array<int, mixed>
 	 */
 	private static function read_raw( Zone $zone, Target $target ): array {
-		if ( function_exists( 'acf_get_value' ) ) {
-			$value = acf_get_value( $target->acf_id, $zone->storage_field() );
-		} elseif ( function_exists( 'get_field' ) ) {
-			$value = get_field( $zone->meta_name(), $target->acf_id, false );
-		} else {
-			$value = array();
-		}
+		$value = acf_get_value( $target->acf_id, $zone->storage_field() );
 
 		return is_array( $value ) ? array_values( $value ) : array();
 	}

@@ -283,16 +283,11 @@ final class LocationRules {
 			return self::hierarchical_post_types( $registrable );
 		}
 
-		if ( '' === $template || ! function_exists( 'wp_get_theme' ) ) {
+		if ( '' === $template ) {
 			return array();
 		}
 
-		$theme = wp_get_theme();
-
-		if ( ! is_object( $theme ) || ! method_exists( $theme, 'get_page_templates' ) ) {
-			return array();
-		}
-
+		$theme      = wp_get_theme();
 		$post_types = array();
 
 		foreach ( $registrable as $post_type ) {
@@ -313,10 +308,6 @@ final class LocationRules {
 	 * @return array<int, string>
 	 */
 	private static function hierarchical_post_types( array $registrable ): array {
-		if ( ! function_exists( 'is_post_type_hierarchical' ) ) {
-			return array_values( array_intersect( $registrable, array( 'page' ) ) );
-		}
-
 		return array_values( array_filter( $registrable, 'is_post_type_hierarchical' ) );
 	}
 }

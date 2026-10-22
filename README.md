@@ -220,7 +220,7 @@ and agencecinq.com — into in-memory stubs, and runs discovery, schemas, mappin
 configuration, OAuth and updates against them. Refresh a fixture with
 `bin/sync-fixtures <name> <path to the theme>`.
 
-Release: bump `Version` and `VERSION` in `cinq-wp-mcp.php`, then push a `v*` tag. The
+Release: bump `Version` in `cinq-wp-mcp.php`, then push a `v*` tag. The
 workflow tests, builds `cinq-wp-mcp.zip` and the `update.json` the updater reads, and
 attaches both to a GitHub release.
 

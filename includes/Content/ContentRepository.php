@@ -472,10 +472,6 @@ final class ContentRepository {
 	 * @return array<string, mixed>
 	 */
 	private static function read_content_fields( WP_Post $post ): array {
-		if ( ! function_exists( 'get_field' ) ) {
-			return array();
-		}
-
 		$values = array();
 
 		foreach ( ZoneRegistry::content_fields( $post->post_type, $post->ID ) as $field ) {

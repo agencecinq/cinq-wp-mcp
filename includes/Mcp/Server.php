@@ -13,7 +13,7 @@ namespace CinqWpMcp\Mcp;
 use CinqWpMcp\Abilities\Registrar;
 use CinqWpMcp\Config\Config;
 use CinqWpMcp\Contracts\Service;
-use const CinqWpMcp\VERSION;
+use CinqWpMcp\Plugin;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -99,32 +99,19 @@ final class Server implements Service {
 	/**
 	 * Creates the server on the adapter.
 	 *
-	 * @param mixed $adapter The MCP adapter instance.
+	 * @param \WP\MCP\Core\McpAdapter $adapter The MCP adapter instance.
 	 * @return void
 	 */
-	public function create_server( $adapter ): void {
-		if ( ! is_object( $adapter ) || ! method_exists( $adapter, 'create_server' ) ) {
-			return;
-		}
-
-		if ( ! class_exists( \WP\MCP\Transport\HttpTransport::class ) ) {
-			return;
-		}
-
-		$transports    = array( \WP\MCP\Transport\HttpTransport::class );
-		$error_handler = class_exists( \WP\MCP\Infrastructure\ErrorHandling\ErrorLogMcpErrorHandler::class )
-			? \WP\MCP\Infrastructure\ErrorHandling\ErrorLogMcpErrorHandler::class
-			: null;
-
+	public function create_server( \WP\MCP\Core\McpAdapter $adapter ): void {
 		$adapter->create_server(
 			self::SERVER_ID,
 			self::REST_NAMESPACE,
 			self::ROUTE,
 			self::title(),
 			self::description(),
-			VERSION,
-			$transports,
-			$error_handler,
+			Plugin::version(),
+			array( \WP\MCP\Transport\HttpTransport::class ),
+			\WP\MCP\Infrastructure\ErrorHandling\ErrorLogMcpErrorHandler::class,
 			null,
 			Registrar::names(),
 			array(),

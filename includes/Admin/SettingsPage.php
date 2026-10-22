@@ -21,9 +21,9 @@ use CinqWpMcp\Mcp\Server;
 use CinqWpMcp\Menus\MenuRepository;
 use CinqWpMcp\OAuth\Store;
 use CinqWpMcp\Options\OptionsRepository;
+use CinqWpMcp\Plugin;
 use CinqWpMcp\Seo\Seo;
 use CinqWpMcp\Templates\TemplateLibrary;
-use const CinqWpMcp\VERSION;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -104,7 +104,7 @@ final class SettingsPage implements Service {
 		$current = isset( $tabs[ $current ] ) ? $current : 'connect';
 
 		echo '<div class="wrap">';
-		printf( '<h1>%s <span style="font-size:13px;font-weight:400;color:#646970">%s</span></h1>', esc_html__( 'CINQ WP MCP', 'cinq-wp-mcp' ), esc_html( VERSION ) );
+		printf( '<h1>%s <span style="font-size:13px;font-weight:400;color:#646970">%s</span></h1>', esc_html__( 'CINQ WP MCP', 'cinq-wp-mcp' ), esc_html( Plugin::version() ) );
 
 		$this->render_notices();
 
@@ -156,7 +156,7 @@ final class SettingsPage implements Service {
 			array(
 				__( 'Dependencies', 'cinq-wp-mcp' ),
 				empty( $missing ),
-				empty( $missing ) ? __( 'WordPress Abilities API, MCP Adapter and ACF flexible content are available.', 'cinq-wp-mcp' ) : implode( ' ', $missing ),
+				empty( $missing ) ? __( 'MCP Adapter and ACF flexible content are available.', 'cinq-wp-mcp' ) : implode( ' ', $missing ),
 			),
 			array(
 				__( 'Block zones', 'cinq-wp-mcp' ),

@@ -281,6 +281,8 @@ function acf_update_value( $value, $post_id, array $field ): bool {
 	return true;
 }
 
+function acf_flush_value_cache( $post_id = 0, string $field_name = '' ): void {}
+
 function get_field( string $selector, $post_id = 0, bool $format = true ) {
 	$name = isset( World::$fields[ $selector ] ) ? World::$fields[ $selector ]['name'] : $selector;
 
