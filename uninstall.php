@@ -21,5 +21,5 @@ $wpdb->query( "DROP TABLE IF EXISTS {$wpdb->prefix}cinq_wp_mcp_clients" ); // ph
 
 delete_option( 'cinq_wp_mcp_overrides' );
 delete_option( 'cinq_wp_mcp_oauth_schema' );
-delete_transient( 'cinq_wp_mcp_latest_release' );
+delete_transient( 'cinq_wp_mcp_release' );
 wp_clear_scheduled_hook( 'cinq_wp_mcp_oauth_purge' );
