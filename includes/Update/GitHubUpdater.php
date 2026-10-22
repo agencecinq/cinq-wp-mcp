@@ -31,8 +31,8 @@ defined( 'ABSPATH' ) || exit;
  * allows sixty calls an hour per address and shared hosting puts many sites
  * behind one. The API stays as a fallback for releases without the file.
  *
- * Auto-updates are on: WordPress installs a new release with its own updates,
- * twice a day. The `cinq_wp_mcp_auto_update` filter turns them off.
+ * Auto-updates are WordPress's own: off by default, turned on per site with
+ * the link of the Plugins screen.
  */
 final class GitHubUpdater implements Service {
 
@@ -64,32 +64,9 @@ final class GitHubUpdater implements Service {
 	public function run(): void {
 		add_filter( 'update_plugins_github.com', array( $this, 'check' ), 10, 3 );
 		add_filter( 'plugins_api', array( $this, 'details' ), 20, 3 );
-		add_filter( 'auto_update_plugin', array( $this, 'auto_update' ), 10, 2 );
 		add_filter( 'upgrader_source_selection', array( $this, 'keep_folder' ), 10, 4 );
 		add_action( 'upgrader_process_complete', array( self::class, 'forget' ) );
-		add_action( 'load-update-core.php', array( $this, 'force_check' ) );
-	}
-
-	/**
-	 * Turns auto-updates on for this plugin.
-	 *
-	 * @param bool|null $update Whether to update, as decided so far.
-	 * @param object    $item   Update offer.
-	 * @return bool|null
-	 */
-	public function auto_update( $update, $item ) {
-		if ( ! is_object( $item ) || plugin_basename( PLUGIN_FILE ) !== ( $item->plugin ?? '' ) ) {
-			return $update;
-		}
-
-		/**
-		 * Filters whether WordPress installs new releases of the plugin on its own.
-		 *
-		 * @since 1.1.0
-		 *
-		 * @param bool $enabled Default true.
-		 */
-		return (bool) apply_filters( 'cinq_wp_mcp_auto_update', true );
+		add_action( 'load-update-core.php', array( $this, 'force_check' ), 9 );
 	}
 
 	/**
@@ -133,6 +110,9 @@ final class GitHubUpdater implements Service {
 
 	/**
 	 * Reads GitHub again when "Check again" is clicked on the Updates screen.
+	 *
+	 * Priority 9: core checks for plugin updates on the same hook at 10, and
+	 * must find the cache already empty.
 	 *
 	 * @return void
 	 */

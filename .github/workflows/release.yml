@@ -2,7 +2,8 @@ name: Release
 
 # Push a tag such as v1.2.0: the plugin zip and its update.json manifest are
 # built and attached to a GitHub release. Sites running the plugin see the
-# update within twelve hours and install it on their own (auto-updates).
+# update within twelve hours, and install it on their own where auto-updates
+# are on.
 
 on:
   push:
