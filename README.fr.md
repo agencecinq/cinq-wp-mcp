@@ -16,7 +16,7 @@ Ce qu'un site veut ajouter (description de ses blocs, règles éditoriales, gaba
 maquette) va dans un `mcp.json` facultatif à la racine du thème, sur le modèle de
 `theme.json`.
 
-[English version](README.md)
+[English version](README.txt)
 
 ## Prérequis
 
@@ -125,7 +125,7 @@ défaut la reçoit, comme dans l'éditeur.
 Facultatif. À la racine du thème, fusionné comme `theme.json` : **valeurs par défaut du
 plugin < thème parent < thème enfant < filtre `cinq_wp_mcp_config` < surcharges enregistrées
 dans l'admin**. Le format complet est dans [`schemas/mcp.schema.json`](schemas/mcp.schema.json)
-et l'exemple commenté dans le [README anglais](README.md#mcpjson).
+et l'exemple commenté dans le [README anglais](README.txt).
 
 Les gabarits peuvent aussi vivre un par fichier dans `mcp/templates/<nom>.json`. Statuts
 d'une section : `exact` (le bloc est la section), `approx` (bloc le plus proche), `theme`
@@ -142,9 +142,11 @@ composer lint     # WordPress Coding Standards
 Le banc d'essai charge les vrais enregistrements ACF de `tests/fixtures/` (le starter et
 agencecinq.com). Les mettre à jour : `bin/sync-fixtures <nom> <chemin du thème>`.
 
-Publier : monter `Version` dans `cinq-wp-mcp.php`, pousser un tag `v*`. Le
-workflow teste, construit `cinq-wp-mcp.zip` et l'`update.json` que lit l'updater, et les
-attache à une release GitHub.
+Publier : monter `Version` dans `cinq-wp-mcp.php` et ajouter la version au journal du
+`README.txt`, pousser un tag `v*`. Le workflow vérifie l'entrée du journal, teste, construit
+`cinq-wp-mcp.zip` et l'`update.json` que lit l'updater, et les attache à une release GitHub :
+l'entrée du journal en devient les notes, et le `README.txt` remplit les détails de
+l'extension.
 
 ## Limites
 

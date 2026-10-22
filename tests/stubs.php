@@ -365,6 +365,14 @@ function esc_url_raw( string $url ): string {
 	return filter_var( $url, FILTER_VALIDATE_URL ) ? $url : '';
 }
 
+function esc_url( string $url ): string {
+	return htmlspecialchars( esc_url_raw( $url ), ENT_QUOTES );
+}
+
+function esc_html( string $text ): string {
+	return htmlspecialchars( $text, ENT_QUOTES );
+}
+
 function wp_kses_post( string $html ): string {
 	return $html;
 }

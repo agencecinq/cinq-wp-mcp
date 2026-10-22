@@ -29,6 +29,10 @@ defined( 'ABSPATH' ) || exit;
  * allows sixty calls an hour per address and shared hosting puts many sites
  * behind one.
  *
+ * The manifest carries the README.txt of the release: the "View details" modal
+ * shows its sections, as WordPress.org does, and the Updates screen the
+ * WordPress version it is tested up to.
+ *
  * Auto-updates are WordPress's own: off by default, turned on per site with
  * the link of the Plugins screen.
  */
@@ -47,7 +51,7 @@ final class GitHubUpdater implements Service {
 	/**
 	 * Transient caching the latest release.
 	 */
-	private const TRANSIENT = 'cinq_wp_mcp_latest_release';
+	private const TRANSIENT = 'cinq_wp_mcp_release';
 
 	/**
 	 * Registers the hooks.
@@ -117,11 +121,13 @@ final class GitHubUpdater implements Service {
 			'package'      => $release['package'],
 			'requires'     => $release['requires'],
 			'requires_php' => $release['requires_php'],
+			'tested'       => self::tested( $release['readme'] ),
+			'icons'        => array( 'svg' => CINQ_WP_MCP_URL . 'assets/icon.svg' ),
 		);
 	}
 
 	/**
-	 * Fills the "View details" modal.
+	 * Fills the "View details" modal with the readme of the release.
 	 *
 	 * @param false|object|array<string, mixed> $result Result so far.
 	 * @param string                            $action API action.
@@ -149,7 +155,6 @@ final class GitHubUpdater implements Service {
 			)
 		);
 		$author  = sprintf( '<a href="%s">%s</a>', esc_url( $headers['author_uri'] ), esc_html( $headers['author'] ) );
-		$notes   = sprintf( '<p><a href="%s">%s</a></p>', esc_url( $release['url'] ), esc_html__( 'Release notes on GitHub', 'cinq-wp-mcp' ) );
 
 		return (object) array(
 			'name'          => $headers['name'],
@@ -159,15 +164,35 @@ final class GitHubUpdater implements Service {
 			'homepage'      => $headers['homepage'],
 			'download_link' => $release['package'],
 			'requires'      => $release['requires'],
+			'tested'        => self::tested( $release['readme'] ),
 			'requires_php'  => $release['requires_php'],
-			'sections'      => array( 'changelog' => $notes ),
+			'last_updated'  => $release['last_updated'],
+			'banners'       => array( 'high' => CINQ_WP_MCP_URL . 'assets/banner.svg' ),
+			'sections'      => Readme::sections( $release['readme'] ),
 		);
+	}
+
+	/**
+	 * Returns the WordPress version the release is tested up to.
+	 *
+	 * As on WordPress.org, "Tested up to: 7.1" covers every 7.1.x release:
+	 * WordPress compares full versions, and would warn a 7.1.3 site that the
+	 * plugin is not tested with it.
+	 *
+	 * @param string $readme Readme of the release.
+	 * @return string
+	 */
+	private static function tested( string $readme ): string {
+		$tested     = Readme::header( $readme, 'Tested up to' );
+		$wp_version = (string) get_bloginfo( 'version' );
+
+		return '' !== $tested && str_starts_with( $wp_version . '.', $tested . '.' ) ? $wp_version : $tested;
 	}
 
 	/**
 	 * Returns the latest release, from cache or from GitHub.
 	 *
-	 * @return array{version: string, url: string, package: string, requires: string, requires_php: string}|null
+	 * @return array{version: string, url: string, package: string, readme: string, requires: string, requires_php: string, last_updated: string}|null
 	 */
 	public static function latest(): ?array {
 		$cached = get_transient( self::TRANSIENT );
@@ -211,7 +236,7 @@ final class GitHubUpdater implements Service {
 	 * Reads the `update.json` attached to a release.
 	 *
 	 * @param string $body File contents.
-	 * @return array{version: string, url: string, package: string, requires: string, requires_php: string}|null
+	 * @return array{version: string, url: string, package: string, readme: string, requires: string, requires_php: string, last_updated: string}|null
 	 */
 	public static function parse_manifest( string $body ): ?array {
 		$data = json_decode( $body, true );
@@ -231,8 +256,10 @@ final class GitHubUpdater implements Service {
 			'version'      => (string) $data['version'],
 			'url'          => (string) ( $data['url'] ?? '' ),
 			'package'      => $package,
+			'readme'       => (string) ( $data['readme'] ?? '' ),
 			'requires'     => (string) ( $data['requires'] ?? '' ),
 			'requires_php' => (string) ( $data['requires_php'] ?? '' ),
+			'last_updated' => (string) ( $data['last_updated'] ?? '' ),
 		);
 	}
 }
