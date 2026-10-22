@@ -57,39 +57,8 @@ final class GitHubUpdater implements Service {
 	public function run(): void {
 		add_filter( 'update_plugins_github.com', array( $this, 'check' ), 10, 3 );
 		add_filter( 'plugins_api', array( $this, 'details' ), 20, 3 );
-		add_filter( 'upgrader_source_selection', array( $this, 'keep_folder' ), 10, 4 );
 		add_action( 'upgrader_process_complete', array( self::class, 'forget' ) );
 		add_action( 'load-update-core.php', array( $this, 'force_check' ), 9 );
-	}
-
-	/**
-	 * Unpacks an update into the folder the plugin already lives in.
-	 *
-	 * The zip unpacks into `cinq-wp-mcp/`. A copy installed under another name
-	 * (a renamed folder) would otherwise come back under that one, and
-	 * WordPress would deactivate the plugin it can no longer find.
-	 *
-	 * @param string|\WP_Error     $source        Unpacked folder.
-	 * @param string               $remote_source Folder it was unpacked in.
-	 * @param mixed                $upgrader      Upgrader.
-	 * @param array<string, mixed> $hook_extra    Context; `plugin` on updates.
-	 * @return string|\WP_Error
-	 */
-	public function keep_folder( $source, $remote_source, $upgrader, $hook_extra = array() ) {
-		global $wp_filesystem;
-
-		if ( ! is_string( $source ) || plugin_basename( PLUGIN_FILE ) !== ( $hook_extra['plugin'] ?? '' ) ) {
-			return $source;
-		}
-
-		$folder = dirname( plugin_basename( PLUGIN_FILE ) );
-		$target = trailingslashit( $remote_source ) . $folder . '/';
-
-		if ( '.' === $folder || untrailingslashit( $source ) === untrailingslashit( $target ) || ! is_object( $wp_filesystem ) ) {
-			return $source;
-		}
-
-		return $wp_filesystem->move( $source, $target, true ) ? $target : $source;
 	}
 
 	/**
