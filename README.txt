@@ -14,8 +14,6 @@ It is written for the way [CINQ](https://agencecinq.com) builds sites (the [wp-c
 
 What a site may want to add — descriptions of its blocks, editorial rules, the page templates of its design — goes in an optional `mcp.json` at the theme root, modeled on `theme.json`.
 
-[Version française](https://github.com/agencecinq/cinq-wp-mcp/blob/main/README.fr.md)
-
 = How the theme is read =
 
 **Zones.** Every ACF flexible content field is a zone, identified by the dotted path of field names that leads to it: `blocks` on pages, `archive_posts.blocks` inside the blog archive's options page. A zone applies where its field group's location rules say. The primary zone of a content type is the one its `blocks` argument writes to — the root zone named `blocks` when there is one. A zone on a taxonomy's terms is prefixed with the taxonomy, `destination:blocks`, so that it never shadows the page zone of the same name.
