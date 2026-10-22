@@ -38,11 +38,10 @@ wp plugin install https://github.com/WordPress/mcp-adapter/releases/latest/downl
 wp plugin install https://github.com/agencecinq/cinq-wp-mcp/releases/latest/download/cinq-wp-mcp.zip --activate
 ```
 
-Updates come from GitHub releases and install themselves: the plugin's `Update URI` points
-at this repository, WordPress sees each new release within twelve hours and installs it with
-its own background updates. *Dashboard → Updates → Check again* looks right away. To keep
-updates manual on a site, return false from the `cinq_wp_mcp_auto_update` filter. No update
-is offered when the plugin folder is a Git working copy, since updating replaces the whole folder.
+Updates come from GitHub releases: the plugin's `Update URI` points at this repository, and
+WordPress sees each new release within twelve hours. *Dashboard → Updates → Check again* looks
+right away. Auto-updates are off by default, as for any plugin: *Enable auto-updates* in the
+Plugins screen turns them on for the site. No update is offered when the plugin folder is a Git working copy, since updating replaces the whole folder.
 
 **Settings → CINQ WP MCP** shows the endpoint, what was found in the theme, where the
 configuration comes from, and the connected applications.
