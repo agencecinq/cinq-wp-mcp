@@ -23,7 +23,6 @@ namespace CinqWpMcp;
 
 defined( 'ABSPATH' ) || exit;
 
-const VERSION     = '1.2.0';
 const PLUGIN_FILE = __FILE__;
 
 /**

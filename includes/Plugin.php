@@ -33,6 +33,13 @@ final class Plugin {
 	private static ?Plugin $instance = null;
 
 	/**
+	 * Version, read once from the plugin header.
+	 *
+	 * @var string|null
+	 */
+	private static ?string $version = null;
+
+	/**
 	 * Returns the singleton instance.
 	 *
 	 * @return Plugin
@@ -43,6 +50,17 @@ final class Plugin {
 		}
 
 		return self::$instance;
+	}
+
+	/**
+	 * Returns the version of the plugin header.
+	 *
+	 * @return string
+	 */
+	public static function version(): string {
+		self::$version ??= get_file_data( PLUGIN_FILE, array( 'version' => 'Version' ) )['version'];
+
+		return self::$version;
 	}
 
 	/**

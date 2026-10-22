@@ -142,7 +142,7 @@ composer lint     # WordPress Coding Standards
 Le banc d'essai charge les vrais enregistrements ACF de `tests/fixtures/` (le starter et
 agencecinq.com). Les mettre à jour : `bin/sync-fixtures <nom> <chemin du thème>`.
 
-Publier : monter `Version` et `VERSION` dans `cinq-wp-mcp.php`, pousser un tag `v*`. Le
+Publier : monter `Version` dans `cinq-wp-mcp.php`, pousser un tag `v*`. Le
 workflow teste, construit `cinq-wp-mcp.zip` et l'`update.json` que lit l'updater, et les
 attache à une release GitHub.
 

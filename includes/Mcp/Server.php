@@ -13,7 +13,7 @@ namespace CinqWpMcp\Mcp;
 use CinqWpMcp\Abilities\Registrar;
 use CinqWpMcp\Config\Config;
 use CinqWpMcp\Contracts\Service;
-use const CinqWpMcp\VERSION;
+use CinqWpMcp\Plugin;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -109,7 +109,7 @@ final class Server implements Service {
 			self::ROUTE,
 			self::title(),
 			self::description(),
-			VERSION,
+			Plugin::version(),
 			array( \WP\MCP\Transport\HttpTransport::class ),
 			\WP\MCP\Infrastructure\ErrorHandling\ErrorLogMcpErrorHandler::class,
 			null,
