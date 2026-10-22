@@ -161,17 +161,9 @@ final class FieldResolver {
 		}
 
 		if ( str_starts_with( $target, 'group_' ) ) {
-			if ( ! function_exists( 'acf_get_fields' ) ) {
-				return array();
-			}
-
 			$fields = acf_get_fields( $target );
 
 			return is_array( $fields ) ? $fields : array();
-		}
-
-		if ( ! function_exists( 'acf_get_field' ) ) {
-			return array();
 		}
 
 		$field = acf_get_field( $target );

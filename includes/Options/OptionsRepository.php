@@ -36,10 +36,6 @@ final class OptionsRepository {
 	 * @return array<string, array<string, mixed>>
 	 */
 	public static function pages(): array {
-		if ( ! function_exists( 'acf_get_options_pages' ) ) {
-			return array();
-		}
-
 		$pages = acf_get_options_pages();
 
 		if ( ! is_array( $pages ) ) {
@@ -107,10 +103,6 @@ final class OptionsRepository {
 	 * @return array<int, array<string, mixed>>
 	 */
 	public static function fields( string $slug ): array {
-		if ( ! function_exists( 'acf_get_field_groups' ) || ! function_exists( 'acf_get_fields' ) ) {
-			return array();
-		}
-
 		$fields = array();
 
 		foreach ( acf_get_field_groups( array( 'options_page' => $slug ) ) as $group ) {

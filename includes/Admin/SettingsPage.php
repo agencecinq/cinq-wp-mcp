@@ -156,7 +156,7 @@ final class SettingsPage implements Service {
 			array(
 				__( 'Dependencies', 'cinq-wp-mcp' ),
 				empty( $missing ),
-				empty( $missing ) ? __( 'WordPress Abilities API, MCP Adapter and ACF flexible content are available.', 'cinq-wp-mcp' ) : implode( ' ', $missing ),
+				empty( $missing ) ? __( 'MCP Adapter and ACF flexible content are available.', 'cinq-wp-mcp' ) : implode( ' ', $missing ),
 			),
 			array(
 				__( 'Block zones', 'cinq-wp-mcp' ),

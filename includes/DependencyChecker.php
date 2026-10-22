@@ -42,10 +42,6 @@ final class DependencyChecker {
 	public static function missing( bool $deep = true ): array {
 		$missing = array();
 
-		if ( ! function_exists( 'wp_register_ability' ) ) {
-			$missing['abilities-api'] = __( 'The WordPress Abilities API is missing. It ships with WordPress 6.9 and later.', 'cinq-wp-mcp' );
-		}
-
 		if ( ! class_exists( '\WP\MCP\Core\McpAdapter' ) ) {
 			$missing['mcp-adapter'] = __( 'The MCP Adapter plugin is not active. Install it from https://github.com/WordPress/mcp-adapter/releases/latest.', 'cinq-wp-mcp' );
 		}
@@ -76,15 +72,11 @@ final class DependencyChecker {
 	public static function has_flexible_content(): bool {
 		// Before ACF has registered its field types there is nothing to look
 		// up yet: no answer is better than a wrong "missing".
-		if ( function_exists( 'did_action' ) && ! did_action( 'acf/include_field_types' ) ) {
+		if ( ! did_action( 'acf/include_field_types' ) ) {
 			return true;
 		}
 
-		if ( function_exists( 'acf_get_field_type' ) && acf_get_field_type( 'flexible_content' ) ) {
-			return true;
-		}
-
-		return class_exists( 'acf_field_flexible_content' );
+		return (bool) acf_get_field_type( 'flexible_content' );
 	}
 
 	/**

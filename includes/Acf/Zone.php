@@ -117,7 +117,7 @@ final class Zone {
 	 * @return array<string, mixed>
 	 */
 	public function storage_field(): array {
-		$own   = function_exists( 'acf_get_field' ) ? acf_get_field( $this->key() ) : false;
+		$own   = acf_get_field( $this->key() );
 		$field = is_array( $own ) && 'flexible_content' === ( $own['type'] ?? '' ) ? $own : $this->field;
 
 		$field['name'] = $this->meta_name();

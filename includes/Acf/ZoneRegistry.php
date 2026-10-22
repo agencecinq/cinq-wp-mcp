@@ -388,10 +388,6 @@ final class ZoneRegistry {
 			return self::$content_fields[ $cache_key ];
 		}
 
-		if ( ! function_exists( 'acf_get_field_groups' ) || ! function_exists( 'acf_get_fields' ) ) {
-			return array();
-		}
-
 		$args = array( 'post_type' => $post_type );
 
 		if ( $post_id > 0 ) {
@@ -482,10 +478,6 @@ final class ZoneRegistry {
 	 * @return array<string, Zone>
 	 */
 	private static function discover(): array {
-		if ( ! function_exists( 'acf_get_field_groups' ) || ! function_exists( 'acf_get_fields' ) ) {
-			return array();
-		}
-
 		$registrable = array_keys( self::registrable_post_types() );
 		$taxonomies  = TermsRepository::taxonomies();
 		$labels      = (array) Config::get( 'settings.zones.labels', array() );
@@ -610,9 +602,7 @@ final class ZoneRegistry {
 			'has_filter'
 		);
 
-		if ( empty( $filters )
-			|| ! function_exists( 'acf_get_form_data' )
-			|| ! function_exists( 'acf_set_form_data' ) ) {
+		if ( empty( $filters ) ) {
 			return null;
 		}
 

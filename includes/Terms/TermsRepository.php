@@ -38,10 +38,6 @@ final class TermsRepository {
 	 * @return array<int, string>
 	 */
 	public static function taxonomies(): array {
-		if ( ! function_exists( 'get_taxonomies' ) ) {
-			return array();
-		}
-
 		$taxonomies = array_values(
 			array_map(
 				'strval',
@@ -115,10 +111,6 @@ final class TermsRepository {
 	 * @return array<int, array<string, mixed>>
 	 */
 	public static function fields( string $taxonomy ): array {
-		if ( ! function_exists( 'acf_get_field_groups' ) || ! function_exists( 'acf_get_fields' ) ) {
-			return array();
-		}
-
 		$fields = array();
 
 		foreach ( acf_get_field_groups( array( 'taxonomy' => $taxonomy ) ) as $group ) {
