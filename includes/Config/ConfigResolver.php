@@ -87,6 +87,9 @@ final class ConfigResolver {
 					'enabled'   => true,
 					'locations' => array(),
 				),
+				'forms'        => array(
+					'enabled' => true,
+				),
 				'seo'          => 'auto',
 				'oauth'        => array(
 					'enabled'      => true,
