@@ -41,6 +41,7 @@ Names take the configured prefix (`site-` by default).
 * `list-options-pages` · `get-options` · `update-options` – ACF options pages (when the theme has some)
 * `get-term` · `update-term` – a term and the ACF fields of its archive page; terms have no draft, a save is live
 * `list-menus` · `get-menu` · `update-menu` · `assign-menu-locations` – navigation menus; item IDs are kept on update
+* `list-forms` · `get-form` · `update-form` – Contact Form 7 forms (when it is active): template, emails, messages, additional settings; `mail`, `mail_2` and `messages` merge key by key, and Contact Form 7's configuration warnings come back with the reply
 
 The SEO title and description are written through Yoast, Rank Math or SEOPress, whichever is active.
 
@@ -63,6 +64,7 @@ Optional. At the theme root, merged like `theme.json`: **plugin defaults < paren
 		"optionsPages": { "include": ["options-theme", "archive-post"] },
 		"taxonomies": { "exclude": ["post_tag"] },
 		"menus": { "locations": ["main", "footer"] },
+		"forms": { "enabled": true },
 		"pageTemplate": "auto",
 		"seo": "auto",
 		"oauth": { "redirectUris": [] }
@@ -89,6 +91,7 @@ Optional. At the theme root, merged like `theme.json`: **plugin defaults < paren
 * `settings.server.instructions` is appended to the server description: it is where the editorial rules for the AI go.
 * `settings.postTypes` filters the public content types. A private type that has an admin screen (a catalog, a list of settings records) is reachable once named in `include`.
 * `settings.taxonomies` filters the public taxonomies whose terms `get-term`, `update-term` and `edit-blocks` reach. A private taxonomy that has an admin screen is reachable once named in `include`.
+* `settings.forms.enabled` turns the Contact Form 7 tools off. Forms are not reached through `settings.postTypes`: their emails and messages are Contact Form 7 properties, not post fields.
 * `blocks.<layout>` annotates a layout (`description`, `guidance`) or hides it (`hidden`).
 * `templates` can also live one per file in `mcp/templates/<name>.json`. Section statuses: `exact` (the block is the section), `approx` (nearest block), `theme` (rendered outside the stack), `missing` (no block yet: Claude says so instead of approximating). Templates are re-checked against the live theme and a block that no longer exists is flagged.
 
@@ -171,6 +174,9 @@ composer lint     # WordPress Coding Standards
 The harness loads real theme ACF registrations from `tests/fixtures/` — the starter theme and agencecinq.com — into in-memory stubs, and runs discovery, schemas, mapping, editing, configuration, OAuth and updates against them. Refresh a fixture with `bin/sync-fixtures <name> <path to the theme>`.
 
 == Changelog ==
+
+= 2.2.0 =
+* Contact Form 7 forms are read and written: `list-forms`, `get-form`, `update-form`. Changing who receives a form's email, its subject or its messages no longer needs the admin. The tools appear when Contact Form 7 is active; `settings.forms.enabled` turns them off.
 
 = 2.1.0 =
 * The plugin details show this readme: description, installation and changelog, with the WordPress version it is tested up to and a banner. The Updates screen shows its icon.

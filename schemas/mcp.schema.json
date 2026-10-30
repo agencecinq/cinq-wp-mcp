@@ -66,6 +66,13 @@
 						"locations": { "$ref": "#/definitions/strings", "description": "Menu locations exposed. Empty means all." }
 					}
 				},
+				"forms": {
+					"type": "object",
+					"additionalProperties": false,
+					"properties": {
+						"enabled": { "type": "boolean", "default": true, "description": "Contact Form 7 tools, when Contact Form 7 is active." }
+					}
+				},
 				"seo": {
 					"enum": [ "auto", "yoast", "rankmath", "seopress", "none" ],
 					"default": "auto",

@@ -110,7 +110,8 @@ final class Registrar implements Service {
 			Library::definitions(),
 			Options::definitions(),
 			Terms::definitions(),
-			Menus::definitions()
+			Menus::definitions(),
+			Forms::definitions()
 		);
 
 		$definitions = array();

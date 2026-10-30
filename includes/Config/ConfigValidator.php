@@ -106,7 +106,7 @@ final class ConfigValidator {
 	 * @return void
 	 */
 	private function check_settings( array $settings ): void {
-		$this->only_keys( $settings, 'settings', array( 'server', 'postTypes', 'zones', 'pageTemplate', 'optionsPages', 'taxonomies', 'menus', 'seo', 'oauth' ) );
+		$this->only_keys( $settings, 'settings', array( 'server', 'postTypes', 'zones', 'pageTemplate', 'optionsPages', 'taxonomies', 'menus', 'forms', 'seo', 'oauth' ) );
 
 		if ( isset( $settings['server'] ) && $this->object( $settings['server'], 'settings.server' ) ) {
 			$server = $settings['server'];
@@ -153,6 +153,11 @@ final class ConfigValidator {
 			$this->only_keys( $settings['menus'], 'settings.menus', array( 'enabled', 'locations' ) );
 			$this->boolean( $settings['menus'], 'enabled', 'settings.menus' );
 			$this->string_list( $settings['menus'], 'locations', 'settings.menus' );
+		}
+
+		if ( isset( $settings['forms'] ) && $this->object( $settings['forms'], 'settings.forms' ) ) {
+			$this->only_keys( $settings['forms'], 'settings.forms', array( 'enabled' ) );
+			$this->boolean( $settings['forms'], 'enabled', 'settings.forms' );
 		}
 
 		if ( isset( $settings['oauth'] ) && $this->object( $settings['oauth'], 'settings.oauth' ) ) {
