@@ -36,14 +36,15 @@ Names take the configured prefix (`site-` by default).
 * `create-content` · `update-content` – create or update, blocks and fields included
 * `edit-blocks` – append, insert, replace, update, move, remove one block, on a post, an options page or a term
 * `delete-content` – trash, restore, delete
-* `search-media` · `upload-media` – media library
+* `search-media` · `upload-media` · `update-media` – media library; `update-media` changes an attachment's alt text, title or caption, the alt text stored in Unicode NFC
 * `list-terms` – taxonomy terms
 * `list-options-pages` · `get-options` · `update-options` – ACF options pages (when the theme has some)
 * `get-term` · `update-term` – a term and the ACF fields of its archive page; terms have no draft, a save is live
 * `list-menus` · `get-menu` · `update-menu` · `assign-menu-locations` – navigation menus; item IDs are kept on update
 * `list-forms` · `get-form` · `update-form` – Contact Form 7 forms (when it is active): template, emails, messages, additional settings; `mail`, `mail_2` and `messages` merge key by key, and Contact Form 7's configuration warnings come back with the reply
+* `get-seo-settings` · `update-seo-settings` – site-wide Yoast SEO settings (when Yoast is the SEO provider): site name, tagline, separator, default social image, the organization and its logo and profiles, title and description templates, indexing and schema article type per content type, archive and taxonomy, author, date and format archives, search and 404 titles; nothing is saved when a value fails validation
 
-The SEO title and description are written through Yoast, Rank Math or SEOPress, whichever is active.
+The SEO title and description are written through Yoast, Rank Math or SEOPress, whichever is active. With Yoast, `seo.noindex` also keeps a post out of search results and the sitemap.
 
 = mcp.json =
 
@@ -174,6 +175,11 @@ composer lint     # WordPress Coding Standards
 The harness loads real theme ACF registrations from `tests/fixtures/` — the starter theme and agencecinq.com — into in-memory stubs, and runs discovery, schemas, mapping, editing, configuration, OAuth and updates against them. Refresh a fixture with `bin/sync-fixtures <name> <path to the theme>`.
 
 == Changelog ==
+
+= 2.3.0 =
+* Yoast SEO site settings are read and written: `get-seo-settings`, `update-seo-settings`. Organization and logo, default social image, title templates, indexing and schema per content type and taxonomy no longer need the admin. The tools appear when Yoast is the SEO provider.
+* `seo.noindex` keeps a post out of search results with Yoast.
+* `update-media` changes the alt text, title or caption of an attachment.
 
 = 2.2.0 =
 * Contact Form 7 forms are read and written: `list-forms`, `get-form`, `update-form`. Changing who receives a form's email, its subject or its messages no longer needs the admin. The tools appear when Contact Form 7 is active; `settings.forms.enabled` turns them off.

@@ -16,13 +16,22 @@ defined( 'ABSPATH' ) || exit;
 
 /**
  * Reads and writes the SEO title and meta description through whichever SEO
- * plugin the site runs.
+ * plugin the site runs, and with Yoast SEO whether a post is kept out of
+ * search results.
  *
  * The three common plugins store the same two values under different meta
  * keys. `settings.seo` picks one explicitly; `auto` (the default) detects the
  * active plugin, and `none` turns the `seo` argument off.
  */
 final class Seo {
+
+	/**
+	 * Yoast SEO meta key of the per-post robots override: `1` keeps the post
+	 * out of search results, no value follows the post type setting.
+	 *
+	 * @var string
+	 */
+	public const YOAST_NOINDEX = '_yoast_wpseo_meta-robots-noindex';
 
 	/**
 	 * Meta keys per provider: title, then description.
@@ -96,17 +105,23 @@ final class Seo {
 			return array();
 		}
 
-		return array(
+		$seo = array(
 			'title'       => (string) get_post_meta( $post_id, $keys['title'], true ),
 			'description' => (string) get_post_meta( $post_id, $keys['description'], true ),
 		);
+
+		if ( 'yoast' === self::provider() ) {
+			$seo['noindex'] = '1' === (string) get_post_meta( $post_id, self::YOAST_NOINDEX, true );
+		}
+
+		return $seo;
 	}
 
 	/**
 	 * Writes the SEO values of a post.
 	 *
 	 * @param int                  $post_id Post ID.
-	 * @param array<string, mixed> $seo     `title` and/or `description`.
+	 * @param array<string, mixed> $seo     `title`, `description` and, with Yoast SEO, `noindex`.
 	 * @return bool Whether a provider took the values.
 	 */
 	public static function write( int $post_id, array $seo ): bool {
@@ -119,6 +134,14 @@ final class Seo {
 		foreach ( array( 'title', 'description' ) as $field ) {
 			if ( isset( $seo[ $field ] ) ) {
 				update_post_meta( $post_id, $keys[ $field ], sanitize_text_field( (string) $seo[ $field ] ) );
+			}
+		}
+
+		if ( 'yoast' === self::provider() && isset( $seo['noindex'] ) ) {
+			if ( $seo['noindex'] ) {
+				update_post_meta( $post_id, self::YOAST_NOINDEX, '1' );
+			} else {
+				delete_post_meta( $post_id, self::YOAST_NOINDEX );
 			}
 		}
 

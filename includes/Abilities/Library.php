@@ -30,6 +30,7 @@ final class Library {
 		return array(
 			'search-media' => self::search_media(),
 			'upload-media' => self::upload_media(),
+			'update-media' => self::update_media(),
 			'list-terms'   => self::list_terms(),
 		);
 	}
@@ -117,6 +118,44 @@ final class Library {
 			},
 			'permission_callback' => static fn(): bool => current_user_can( 'upload_files' ),
 			'meta'                => Registrar::meta( false, array( 'destructive' => false ) ),
+		);
+	}
+
+	/**
+	 * Ability: update the text of an attachment.
+	 *
+	 * @return array<string, mixed>
+	 */
+	private static function update_media(): array {
+		return array(
+			'label'               => __( 'Update media', 'cinq-wp-mcp' ),
+			'description'         => sprintf(
+				'Updates the alt text, title or caption of an attachment from the media library; find its ID with %s. Only what you pass changes. Write real alt text that describes the image, or an empty one for a purely decorative image.',
+				Registrar::tool( 'search-media' )
+			),
+			'input_schema'        => array(
+				'type'       => 'object',
+				'properties' => array(
+					'id'      => array(
+						'type'        => 'integer',
+						'description' => 'Attachment ID.',
+					),
+					'alt'     => array( 'type' => 'string' ),
+					'title'   => array( 'type' => 'string' ),
+					'caption' => array( 'type' => 'string' ),
+				),
+				'required'   => array( 'id' ),
+			),
+			'execute_callback'    => static function ( array $input ) {
+				return MediaRepository::update(
+					(int) ( $input['id'] ?? 0 ),
+					array_intersect_key( $input, array_flip( array( 'alt', 'title', 'caption' ) ) )
+				);
+			},
+			'permission_callback' => static function ( $input ): bool {
+				return current_user_can( 'edit_post', (int) ( is_array( $input ) ? ( $input['id'] ?? 0 ) : 0 ) );
+			},
+			'meta'                => Registrar::meta( false, array( 'idempotent' => true ) ),
 		);
 	}
 
