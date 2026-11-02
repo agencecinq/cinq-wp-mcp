@@ -121,6 +121,10 @@ final class Content {
 				'properties'           => array(
 					'title'       => array( 'type' => 'string' ),
 					'description' => array( 'type' => 'string' ),
+					'noindex'     => array(
+						'type'        => 'boolean',
+						'description' => 'Yoast SEO only. true keeps this content out of search results and the sitemap; false follows the content type setting.',
+					),
 				),
 				'additionalProperties' => false,
 			),

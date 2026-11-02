@@ -64,6 +64,9 @@ final class World {
 	/** @var array<int, string> Public post types. */
 	public static array $post_types = array( 'page', 'post' );
 
+	/** @var array<int, string> Post types with an archive. */
+	public static array $archives = array();
+
 	/** @var array<int, string> Private post types shown in the admin. */
 	public static array $admin_post_types = array();
 
@@ -107,6 +110,7 @@ final class World {
 		self::$admin_taxonomies = array();
 		self::$flexible       = true;
 		self::$post_types     = array( 'page', 'post' );
+		self::$archives       = array();
 		self::$admin_post_types = array();
 		self::$template_dir   = '';
 		self::$stylesheet_dir = '';
@@ -453,6 +457,8 @@ function get_post_types( array $args = array(), string $output = 'names' ): arra
 		$object->name                  = $type;
 		$object->labels                = new stdClass();
 		$object->labels->singular_name = ucfirst( $type );
+		$object->label                 = ucfirst( $type ) . 's';
+		$object->has_archive           = in_array( $type, World::$archives, true );
 		$objects[ $type ]              = $object;
 	}
 
@@ -539,6 +545,12 @@ function update_post_meta( $post_id, string $key, $value ): bool {
 	return true;
 }
 
+function delete_post_meta( $post_id, string $key ): bool {
+	unset( World::$meta[ $post_id . ':' . $key ] );
+
+	return true;
+}
+
 function get_term( $term_id, string $taxonomy = '' ) {
 	$term          = new WP_Term();
 	$term->term_id = (int) $term_id;
@@ -551,7 +563,20 @@ function get_term( $term_id, string $taxonomy = '' ) {
 }
 
 function get_taxonomies( array $args = array(), string $output = 'names' ): array {
-	return array_combine( World::$taxonomies, World::$taxonomies );
+	if ( 'objects' !== $output ) {
+		return array_combine( World::$taxonomies, World::$taxonomies );
+	}
+
+	$objects = array();
+
+	foreach ( World::$taxonomies as $taxonomy ) {
+		$object             = new stdClass();
+		$object->name       = $taxonomy;
+		$object->label      = ucfirst( $taxonomy );
+		$objects[ $taxonomy ] = $object;
+	}
+
+	return $objects;
 }
 
 function get_taxonomy( string $taxonomy ) {
@@ -832,4 +857,41 @@ World::reset();
 
 function did_action( string $hook ): int {
 	return 1;
+}
+
+function sanitize_textarea_field( $value ): string {
+	return trim( strip_tags( (string) $value ) );
+}
+
+function wp_get_attachment_url( $attachment_id ) {
+	return isset( World::$posts[ (int) $attachment_id ] ) ? 'https://example.test/uploads/' . (int) $attachment_id . '.jpg' : false;
+}
+
+function wp_get_attachment_metadata( $attachment_id ) {
+	return array(
+		'width'  => 1200,
+		'height' => 675,
+	);
+}
+
+function get_the_title( $post_id = 0 ): string {
+	return (string) ( World::$posts[ (int) $post_id ]['title'] ?? '' );
+}
+
+function get_post_mime_type( $post_id = 0 ) {
+	return isset( World::$posts[ (int) $post_id ] ) ? 'image/jpeg' : false;
+}
+
+function wp_update_post( $postarr = array(), bool $wp_error = false ) {
+	$post_id = (int) ( $postarr['ID'] ?? 0 );
+
+	if ( isset( $postarr['post_title'] ) ) {
+		World::$posts[ $post_id ]['title'] = $postarr['post_title'];
+	}
+
+	if ( isset( $postarr['post_excerpt'] ) ) {
+		World::$posts[ $post_id ]['excerpt'] = $postarr['post_excerpt'];
+	}
+
+	return $post_id;
 }

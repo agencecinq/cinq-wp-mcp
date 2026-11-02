@@ -131,6 +131,55 @@ final class MediaRepository {
 	}
 
 	/**
+	 * Updates the text of an attachment: alt text, title and caption.
+	 *
+	 * The alt text is stored in Unicode NFC, so accents pasted in their
+	 * decomposed form read and validate like typed ones.
+	 *
+	 * @param int                  $attachment_id Attachment ID.
+	 * @param array<string, mixed> $args          `alt`, `title` and/or `caption`.
+	 * @return array<string, mixed>|WP_Error The attachment after the update.
+	 */
+	public static function update( int $attachment_id, array $args ) {
+		$attachment = get_post( $attachment_id );
+
+		if ( ! $attachment instanceof WP_Post || 'attachment' !== $attachment->post_type ) {
+			return new WP_Error( 'cinq_wp_mcp_unknown_media', sprintf( 'Attachment %d does not exist.', $attachment_id ) );
+		}
+
+		if ( isset( $args['alt'] ) ) {
+			$alt = sanitize_text_field( (string) $args['alt'] );
+
+			if ( class_exists( 'Normalizer' ) ) {
+				$alt = (string) \Normalizer::normalize( $alt, \Normalizer::FORM_C );
+			}
+
+			update_post_meta( $attachment_id, '_wp_attachment_image_alt', $alt );
+		}
+
+		$post = array();
+
+		if ( isset( $args['title'] ) ) {
+			$post['post_title'] = sanitize_text_field( (string) $args['title'] );
+		}
+
+		if ( isset( $args['caption'] ) ) {
+			$post['post_excerpt'] = sanitize_textarea_field( (string) $args['caption'] );
+		}
+
+		if ( ! empty( $post ) ) {
+			$post['ID'] = $attachment_id;
+			$updated    = wp_update_post( $post, true );
+
+			if ( is_wp_error( $updated ) ) {
+				return $updated;
+			}
+		}
+
+		return self::describe( $attachment_id );
+	}
+
+	/**
 	 * Searches the media library.
 	 *
 	 * @param string $search    Free-text search across title, caption and file name.

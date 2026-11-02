@@ -109,6 +109,7 @@ final class Registrar implements Service {
 			Content::definitions(),
 			Library::definitions(),
 			Options::definitions(),
+			Seo::definitions(),
 			Terms::definitions(),
 			Menus::definitions(),
 			Forms::definitions()
