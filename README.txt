@@ -160,9 +160,9 @@ Updates come from GitHub releases: the plugin's `Update URI` points at this repo
 To publish a release:
 
 1. Bump `Version` in `cinq-wp-mcp.php`, and add the version to the changelog below.
-2. Commit, push, then push a tag: `git tag v2.1.0 && git push origin v2.1.0`.
+2. Commit, push, then push a tag: `git tag v2.4.0 && git push origin v2.4.0`. An annotated tag names the release after its message: `git tag -a v2.4.0 -m Name` publishes "v2.4.0 · Name".
 
-The release workflow checks that the tag matches the version and has a changelog entry, runs the tests, builds `cinq-wp-mcp.zip` with `git archive` (`.gitattributes` leaves the development files out) and attaches it to the release with `update.json`. The changelog entry becomes the release notes, and the plugin details show this file as it is in the release.
+The release workflow checks that the tag matches the version and has a changelog entry, runs the tests, builds `cinq-wp-mcp.zip` with `git archive` (`.gitattributes` leaves the development files out) and attaches it to the release with `update.json`. The release is titled by the tag, followed by the message of an annotated tag. An image at `.github/releases/v2.4.0.png` heads its notes, when there is one. The changelog entry becomes the release notes, and the plugin details show this file as it is in the release.
 
 = Development =
 
