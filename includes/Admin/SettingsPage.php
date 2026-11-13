@@ -23,6 +23,7 @@ use CinqWpMcp\OAuth\Store;
 use CinqWpMcp\Options\OptionsRepository;
 use CinqWpMcp\Plugin;
 use CinqWpMcp\Seo\Seo;
+use CinqWpMcp\Settings\SettingsRepository;
 use CinqWpMcp\Templates\TemplateLibrary;
 
 defined( 'ABSPATH' ) || exit;
@@ -396,6 +397,8 @@ final class SettingsPage implements Service {
 			echo '</ul>';
 		}
 
+		$this->render_registered_settings();
+
 		if ( false === Config::get( 'settings.menus.enabled', true ) ) {
 			return;
 		}
@@ -408,6 +411,40 @@ final class SettingsPage implements Service {
 				'<li><code>%s</code> — %s</li>',
 				esc_html( $location['location'] ),
 				esc_html( $location['label'] )
+			);
+		}
+
+		echo '</ul>';
+	}
+
+	/**
+	 * Renders the registered settings, flagging names WordPress does not expose.
+	 *
+	 * @return void
+	 */
+	private function render_registered_settings(): void {
+		if ( ! SettingsRepository::enabled() ) {
+			return;
+		}
+
+		echo '<h2>' . esc_html__( 'Settings', 'cinq-wp-mcp' ) . '</h2>';
+		echo '<ul style="list-style:disc;margin-left:1.5em">';
+
+		foreach ( SettingsRepository::schemas() as $name => $schema ) {
+			$label = '' !== (string) ( $schema['title'] ?? '' ) ? $schema['title'] : ( $schema['description'] ?? '' );
+
+			printf(
+				'<li><code>%s</code> — %s</li>',
+				esc_html( (string) $name ),
+				esc_html( (string) $label )
+			);
+		}
+
+		foreach ( SettingsRepository::missing() as $name ) {
+			printf(
+				'<li><code>%s</code> — <span style="color:#b32d2e">%s</span></li>',
+				esc_html( $name ),
+				esc_html__( 'Not exposed: register it with show_in_rest and a type or schema.', 'cinq-wp-mcp' )
 			);
 		}
 

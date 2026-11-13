@@ -60,38 +60,42 @@ final class ConfigResolver {
 		return array(
 			'version'   => self::VERSION,
 			'settings'  => array(
-				'server'       => array(
+				'server'             => array(
 					'title'        => (string) get_bloginfo( 'name' ),
 					'instructions' => '',
 					'toolPrefix'   => 'site',
 				),
-				'postTypes'    => array(
+				'postTypes'          => array(
 					'include' => array(),
 					'exclude' => array(),
 				),
-				'zones'        => array(
+				'zones'              => array(
 					'include' => array(),
 					'exclude' => array(),
 					'labels'  => array(),
 				),
-				'pageTemplate' => 'auto',
-				'optionsPages' => array(
+				'pageTemplate'       => 'auto',
+				'optionsPages'       => array(
 					'include' => array(),
 					'exclude' => array(),
 				),
-				'taxonomies'   => array(
+				'taxonomies'         => array(
 					'include' => array(),
 					'exclude' => array(),
 				),
-				'menus'        => array(
+				'registeredSettings' => array(
+					'include' => array(),
+					'exclude' => array(),
+				),
+				'menus'              => array(
 					'enabled'   => true,
 					'locations' => array(),
 				),
-				'forms'        => array(
+				'forms'              => array(
 					'enabled' => true,
 				),
-				'seo'          => 'auto',
-				'oauth'        => array(
+				'seo'                => 'auto',
+				'oauth'              => array(
 					'enabled'      => true,
 					'redirectUris' => array(),
 				),
