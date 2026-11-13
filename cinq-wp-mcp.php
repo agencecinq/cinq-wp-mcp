@@ -3,7 +3,7 @@
  * Plugin Name:       CINQ WP MCP
  * Plugin URI:        https://github.com/agencecinq/cinq-wp-mcp
  * Description:       Exposes a site built from ACF flexible content blocks as an MCP server, so AI clients such as Claude can build and edit its pages, settings and menus. Everything is read from the theme: no code per site.
- * Version:           2.3.0
+ * Version:           2.4.0
  * Requires at least: 6.9
  * Requires PHP:      8.1
  * Author:            CINQ
