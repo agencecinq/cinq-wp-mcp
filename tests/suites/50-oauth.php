@@ -78,14 +78,14 @@ check( 'any other path is left to WordPress', 'none' === $document( '/olmagi/con
 
 section( 'Registration' );
 
-$response = Endpoints::register_client( new WP_REST_Request( array( 'client_name' => 'Claude', 'redirect_uris' => array( 'https://claude.ai/api/mcp/auth_callback' ), 'token_endpoint_auth_method' => 'client_secret_post' ) ) );
+$response = Endpoints::register_client( rest_request( array( 'client_name' => 'Claude', 'redirect_uris' => array( 'https://claude.ai/api/mcp/auth_callback' ), 'token_endpoint_auth_method' => 'client_secret_post' ) ) );
 $client   = $response->get_data();
 
 check( 'a client registers', 201 === $response->get_status() && str_starts_with( (string) ( $client['client_id'] ?? '' ), 'mcp_' ) );
 check( 'it is told it is a public client', 'none' === ( $client['token_endpoint_auth_method'] ?? null ) );
 check( 'it is stored', 'Claude' === ( Store::client( $client['client_id'] )['name'] ?? null ) );
 
-$refused = Endpoints::register_client( new WP_REST_Request( array( 'redirect_uris' => array( 'https://evil.example/cb' ) ) ) );
+$refused = Endpoints::register_client( rest_request( array( 'redirect_uris' => array( 'https://evil.example/cb' ) ) ) );
 
 check( 'a foreign redirect URI is refused at registration', 400 === $refused->get_status() && 'invalid_redirect_uri' === ( $refused->get_data()['error'] ?? null ) );
 
@@ -100,7 +100,7 @@ $GLOBALS['cinq_users'][3] = $user;
 $redirect = 'https://claude.ai/api/mcp/auth_callback';
 $issue    = static fn(): string => Store::issue( 'code', bin2hex( random_bytes( 16 ) ), $client['client_id'], 3, 'read write', Protocol::CODE_TTL, array( 'redirect_uri' => $redirect, 'code_challenge' => $challenge ) );
 $exchange = static fn( string $code, array $extra = array() ) => Endpoints::token(
-	new WP_REST_Request(
+	rest_request(
 		$extra + array(
 			'grant_type'    => 'authorization_code',
 			'code'          => $code,
@@ -132,7 +132,7 @@ check( 'another client cannot redeem it', 'invalid_grant' === ( $exchange( $issu
 
 $tokens  = $exchange( $issue() )->get_data();
 $refresh = static fn( string $token, array $extra = array() ) => Endpoints::token(
-	new WP_REST_Request( $extra + array( 'grant_type' => 'refresh_token', 'refresh_token' => $token, 'client_id' => $client['client_id'] ) )
+	rest_request( $extra + array( 'grant_type' => 'refresh_token', 'refresh_token' => $token, 'client_id' => $client['client_id'] ) )
 );
 
 $rotated = $refresh( (string) $tokens['refresh_token'] )->get_data();
@@ -175,7 +175,7 @@ section( 'Revocation' );
 
 $tokens = $exchange( $issue() )->get_data();
 
-Endpoints::revoke( new WP_REST_Request( array( 'token' => $tokens['refresh_token'], 'client_id' => $client['client_id'] ) ) );
+Endpoints::revoke( rest_request( array( 'token' => $tokens['refresh_token'], 'client_id' => $client['client_id'] ) ) );
 
 check( 'revoking the refresh token revokes the access token too', true === Store::find( (string) $tokens['access_token'], 'access' )['revoked'] );
-check( 'revoking garbage still answers 200', 200 === Endpoints::revoke( new WP_REST_Request( array( 'token' => 'nope' ) ) )->get_status() );
+check( 'revoking garbage still answers 200', 200 === Endpoints::revoke( rest_request( array( 'token' => 'nope' ) ) )->get_status() );

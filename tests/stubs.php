@@ -94,6 +94,9 @@ final class World {
 	/** @var array<int, array<string, mixed>> Terms keyed by ID. */
 	public static array $terms = array();
 
+	/** @var array<string, array<string, mixed>> Settings shown at /wp/v2/settings: REST schema keyed by name, value in $options. */
+	public static array $settings = array();
+
 	/** @var array<string, int> Wrapper so `instanceof` works on posts. */
 	public static array $by_type = array();
 
@@ -105,7 +108,7 @@ final class World {
 	public static function reset(): void {
 		self::$groups = self::$fields = self::$options_pages = self::$values = self::$posts = self::$meta = array();
 		self::$options = self::$transients = self::$filters = self::$form = self::$page_templates = array();
-		self::$menu_locations = self::$assigned_menus = self::$by_type = self::$terms = array();
+		self::$menu_locations = self::$assigned_menus = self::$by_type = self::$terms = self::$settings = array();
 		self::$taxonomies     = array( 'category', 'post_tag' );
 		self::$admin_taxonomies = array();
 		self::$flexible       = true;
@@ -790,7 +793,21 @@ function current_user_can( string $capability, ...$args ): bool {
 }
 
 class WP_REST_Request {
-	public function __construct( private array $params = array(), private string $route = '' ) {}
+	private array $params = array();
+
+	public function __construct( private string $method = '', private string $route = '', array $attributes = array() ) {}
+
+	public function get_method(): string {
+		return $this->method;
+	}
+
+	public function set_body_params( array $params ): void {
+		$this->params = $params;
+	}
+
+	public function get_params(): array {
+		return $this->params;
+	}
 
 	public function get_param( string $key ) {
 		return $this->params[ $key ] ?? null;
@@ -827,7 +844,108 @@ class WP_HTTP_Response {
 	}
 }
 
-class WP_REST_Response extends WP_HTTP_Response {}
+class WP_REST_Response extends WP_HTTP_Response {
+	public function is_error(): bool {
+		return $this->status >= 400;
+	}
+
+	public function as_error(): WP_Error {
+		return new WP_Error( (string) $this->data['code'], (string) $this->data['message'], $this->data['data'] ?? null );
+	}
+}
+
+/**
+ * Builds a POST request carrying body params, as a client sends it.
+ *
+ * @param array<string, mixed> $params Body params.
+ * @return WP_REST_Request
+ */
+function rest_request( array $params ): WP_REST_Request {
+	$request = new WP_REST_Request( 'POST' );
+	$request->set_body_params( $params );
+
+	return $request;
+}
+
+/**
+ * Core's settings controller, reduced to the schema of World::$settings.
+ */
+class WP_REST_Settings_Controller {
+	public function get_public_item_schema(): array {
+		return array(
+			'type'       => 'object',
+			'properties' => World::$settings,
+		);
+	}
+}
+
+/**
+ * A value against a settings schema, the way rest_validate_value_from_schema()
+ * judges it for the types the tests use.
+ *
+ * @param mixed                $value  Value.
+ * @param array<string, mixed> $schema Schema.
+ * @return bool
+ */
+function cinq_valid_setting( $value, array $schema ): bool {
+	switch ( $schema['type'] ?? '' ) {
+		case 'string':
+			return is_string( $value );
+		case 'boolean':
+			return is_bool( $value );
+		case 'object':
+			if ( ! is_array( $value ) ) {
+				return false;
+			}
+
+			foreach ( $value as $key => $item ) {
+				$property = $schema['properties'][ $key ] ?? null;
+
+				if ( null === $property || ! cinq_valid_setting( $item, $property ) ) {
+					return false;
+				}
+			}
+
+			return true;
+	}
+
+	return false;
+}
+
+/**
+ * Dispatches /wp/v2/settings like core: manage_options, every param checked
+ * before any is written, the whole response read back.
+ *
+ * @param WP_REST_Request $request Request.
+ * @return WP_REST_Response
+ */
+function rest_do_request( WP_REST_Request $request ): WP_REST_Response {
+	if ( ! current_user_can( 'manage_options' ) ) {
+		return new WP_REST_Response( array( 'code' => 'rest_forbidden', 'message' => 'Sorry, you are not allowed to do that.' ), 403 );
+	}
+
+	if ( 'POST' === $request->get_method() ) {
+		foreach ( $request->get_params() as $name => $value ) {
+			if ( isset( World::$settings[ $name ] ) && ! cinq_valid_setting( $value, World::$settings[ $name ] ) ) {
+				return new WP_REST_Response( array( 'code' => 'rest_invalid_param', 'message' => 'Invalid parameter(s): ' . $name ), 400 );
+			}
+		}
+
+		foreach ( $request->get_params() as $name => $value ) {
+			if ( isset( World::$settings[ $name ] ) ) {
+				update_option( $name, $value );
+			}
+		}
+	}
+
+	$data = array();
+
+	foreach ( World::$settings as $name => $schema ) {
+		$data[ $name ] = get_option( $name, $schema['default'] ?? null );
+	}
+
+	return new WP_REST_Response( $data );
+}
 
 // --- Autoloading ----------------------------------------------------------
 

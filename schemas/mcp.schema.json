@@ -58,6 +58,7 @@
 				},
 				"optionsPages": { "$ref": "#/definitions/filter", "description": "ACF options pages the tools can reach, by menu slug. Defaults to all." },
 				"taxonomies": { "$ref": "#/definitions/filter", "description": "Taxonomies whose terms the tools can read and write, fields and block zones included. Defaults to the public ones; a private taxonomy with an admin screen is reachable once named in include." },
+				"registeredSettings": { "$ref": "#/definitions/filter", "description": "Settings registered with register_setting() and show_in_rest that get-settings and update-settings can reach, by REST name. Defaults to none: core settings such as the admin email stay out of reach." },
 				"menus": {
 					"type": "object",
 					"additionalProperties": false,

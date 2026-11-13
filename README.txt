@@ -39,6 +39,7 @@ Names take the configured prefix (`site-` by default).
 * `search-media` · `upload-media` · `update-media` – media library; `update-media` changes an attachment's alt text, title or caption, the alt text stored in Unicode NFC
 * `list-terms` – taxonomy terms
 * `list-options-pages` · `get-options` · `update-options` – ACF options pages (when the theme has some)
+* `get-settings` · `update-settings` – settings registered with `register_setting()` and `show_in_rest` (social profile URLs, a contact address), when `mcp.json` names them; read and written through `/wp/v2/settings`, so the setting's schema validates every value, and an object setting passed is replaced whole
 * `get-term` · `update-term` – a term and the ACF fields of its archive page; terms have no draft, a save is live
 * `list-menus` · `get-menu` · `update-menu` · `assign-menu-locations` – navigation menus; item IDs are kept on update
 * `list-forms` · `get-form` · `update-form` – Contact Form 7 forms (when it is active): template, emails, messages, additional settings; `mail`, `mail_2` and `messages` merge key by key, and Contact Form 7's configuration warnings come back with the reply
@@ -64,6 +65,7 @@ Optional. At the theme root, merged like `theme.json`: **plugin defaults < paren
 		"zones": { "labels": { "archive_posts.blocks": "Blog archive" } },
 		"optionsPages": { "include": ["options-theme", "archive-post"] },
 		"taxonomies": { "exclude": ["post_tag"] },
+		"registeredSettings": { "include": ["socials"] },
 		"menus": { "locations": ["main", "footer"] },
 		"forms": { "enabled": true },
 		"pageTemplate": "auto",
@@ -92,6 +94,7 @@ Optional. At the theme root, merged like `theme.json`: **plugin defaults < paren
 * `settings.server.instructions` is appended to the server description: it is where the editorial rules for the AI go.
 * `settings.postTypes` filters the public content types. A private type that has an admin screen (a catalog, a list of settings records) is reachable once named in `include`.
 * `settings.taxonomies` filters the public taxonomies whose terms `get-term`, `update-term` and `edit-blocks` reach. A private taxonomy that has an admin screen is reachable once named in `include`.
+* `settings.registeredSettings` names the settings `get-settings` and `update-settings` reach, by their REST name. None is reachable by default: core registers its own there (site title, admin email, front page). A named setting must be registered with `show_in_rest` and a type or schema, on `init` rather than `admin_init` so the REST API sees it; the settings screen flags one that is not.
 * `settings.forms.enabled` turns the Contact Form 7 tools off. Forms are not reached through `settings.postTypes`: their emails and messages are Contact Form 7 properties, not post fields.
 * `blocks.<layout>` annotates a layout (`description`, `guidance`) or hides it (`hidden`).
 * `templates` can also live one per file in `mcp/templates/<name>.json`. Section statuses: `exact` (the block is the section), `approx` (nearest block), `theme` (rendered outside the stack), `missing` (no block yet: Claude says so instead of approximating). Templates are re-checked against the live theme and a block that no longer exists is flagged.
@@ -175,6 +178,9 @@ composer lint     # WordPress Coding Standards
 The harness loads real theme ACF registrations from `tests/fixtures/` — the starter theme and agencecinq.com — into in-memory stubs, and runs discovery, schemas, mapping, editing, configuration, OAuth and updates against them. Refresh a fixture with `bin/sync-fixtures <name> <path to the theme>`.
 
 == Changelog ==
+
+= 2.4.0 =
+* Settings registered with `register_setting()` are read and written: `get-settings`, `update-settings`. Values a theme keeps as plain options, such as social profile URLs, no longer need the admin. They go through `/wp/v2/settings`, so the setting's own schema validates them. `settings.registeredSettings.include` names the settings to expose; none is by default.
 
 = 2.3.0 =
 * Yoast SEO site settings are read and written: `get-seo-settings`, `update-seo-settings`. Organization and logo, default social image, title templates, indexing and schema per content type and taxonomy no longer need the admin. The tools appear when Yoast is the SEO provider.
