@@ -99,6 +99,20 @@ check( 'the read reports false', false === ( Seo::read( 10 )['noindex'] ?? null 
 Seo::write( 10, array( 'title' => 'Titre' ) );
 check( 'a write without noindex leaves it alone', '' === get_post_meta( 10, Seo::YOAST_NOINDEX, true ) && 'Titre' === Seo::read( 10 )['title'] );
 
+section( 'Per-post focus keyphrase' );
+
+check( 'the read reports an empty keyphrase', '' === ( Seo::read( 10 )['focus_keyphrase'] ?? null ) );
+
+Seo::write( 10, array( 'focus_keyphrase' => ' décret <b>tertiaire</b> ' ) );
+check( 'the keyphrase is stored sanitized in the Yoast meta', 'décret tertiaire' === get_post_meta( 10, Seo::YOAST_FOCUS_KEYPHRASE, true ) );
+check( 'the read reports it', 'décret tertiaire' === ( Seo::read( 10 )['focus_keyphrase'] ?? null ) );
+
+Seo::write( 10, array( 'title' => 'Titre' ) );
+check( 'a write without the keyphrase leaves it alone', 'décret tertiaire' === get_post_meta( 10, Seo::YOAST_FOCUS_KEYPHRASE, true ) );
+
+Seo::write( 10, array( 'focus_keyphrase' => '' ) );
+check( 'an empty keyphrase clears it', '' === get_post_meta( 10, Seo::YOAST_FOCUS_KEYPHRASE, true ) );
+
 section( 'SEO settings tools' );
 
 World::$post_types = array( 'page', 'post', 'case_study' );

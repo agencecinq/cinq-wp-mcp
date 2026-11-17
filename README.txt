@@ -45,7 +45,7 @@ Names take the configured prefix (`site-` by default).
 * `list-forms` · `get-form` · `update-form` – Contact Form 7 forms (when it is active): template, emails, messages, additional settings; `mail`, `mail_2` and `messages` merge key by key, and Contact Form 7's configuration warnings come back with the reply
 * `get-seo-settings` · `update-seo-settings` – site-wide Yoast SEO settings (when Yoast is the SEO provider): site name, tagline, separator, default social image, the organization and its logo and profiles, title and description templates, indexing and schema article type per content type, archive and taxonomy, author, date and format archives, search and 404 titles; nothing is saved when a value fails validation
 
-The SEO title and description are written through Yoast, Rank Math or SEOPress, whichever is active. With Yoast, `seo.noindex` also keeps a post out of search results and the sitemap.
+The SEO title and description are written through Yoast, Rank Math or SEOPress, whichever is active. With Yoast, `seo.noindex` also keeps a post out of search results and the sitemap, and `seo.focus_keyphrase` sets the focus keyphrase its content analysis checks the post against.
 
 = mcp.json =
 
@@ -178,6 +178,9 @@ composer lint     # WordPress Coding Standards
 The harness loads real theme ACF registrations from `tests/fixtures/` — the starter theme and agencecinq.com — into in-memory stubs, and runs discovery, schemas, mapping, editing, configuration, OAuth and updates against them. Refresh a fixture with `bin/sync-fixtures <name> <path to the theme>`.
 
 == Changelog ==
+
+= 2.5.0 =
+* `seo.focus_keyphrase` reads and writes the Yoast SEO focus keyphrase of a post, the phrase its content analysis checks the post against. Filling it on many pages no longer needs the admin.
 
 = 2.4.0 =
 * Settings registered with `register_setting()` are read and written: `get-settings`, `update-settings`. Values a theme keeps as plain options, such as social profile URLs, no longer need the admin. They go through `/wp/v2/settings`, so the setting's own schema validates them. `settings.registeredSettings.include` names the settings to expose; none is by default.
