@@ -119,11 +119,15 @@ final class Content {
 				'type'                 => 'object',
 				'description'          => 'SEO title and meta description, written through the active SEO plugin (Yoast, Rank Math or SEOPress). Ignored when none is active.',
 				'properties'           => array(
-					'title'       => array( 'type' => 'string' ),
-					'description' => array( 'type' => 'string' ),
-					'noindex'     => array(
+					'title'           => array( 'type' => 'string' ),
+					'description'     => array( 'type' => 'string' ),
+					'noindex'         => array(
 						'type'        => 'boolean',
 						'description' => 'Yoast SEO only. true keeps this content out of search results and the sitemap; false follows the content type setting.',
+					),
+					'focus_keyphrase' => array(
+						'type'        => 'string',
+						'description' => 'Yoast SEO only. The focus keyphrase its content analysis checks this content against, in plain words ("décret tertiaire", not a slug). It is not printed on the page. An empty string clears it.',
 					),
 				),
 				'additionalProperties' => false,

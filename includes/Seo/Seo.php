@@ -17,7 +17,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Reads and writes the SEO title and meta description through whichever SEO
  * plugin the site runs, and with Yoast SEO whether a post is kept out of
- * search results.
+ * search results and its focus keyphrase.
  *
  * The three common plugins store the same two values under different meta
  * keys. `settings.seo` picks one explicitly; `auto` (the default) detects the
@@ -32,6 +32,14 @@ final class Seo {
 	 * @var string
 	 */
 	public const YOAST_NOINDEX = '_yoast_wpseo_meta-robots-noindex';
+
+	/**
+	 * Yoast SEO meta key of the focus keyphrase, the phrase its content
+	 * analysis checks the post against. It is not printed on the page.
+	 *
+	 * @var string
+	 */
+	public const YOAST_FOCUS_KEYPHRASE = '_yoast_wpseo_focuskw';
 
 	/**
 	 * Meta keys per provider: title, then description.
@@ -111,7 +119,8 @@ final class Seo {
 		);
 
 		if ( 'yoast' === self::provider() ) {
-			$seo['noindex'] = '1' === (string) get_post_meta( $post_id, self::YOAST_NOINDEX, true );
+			$seo['noindex']         = '1' === (string) get_post_meta( $post_id, self::YOAST_NOINDEX, true );
+			$seo['focus_keyphrase'] = (string) get_post_meta( $post_id, self::YOAST_FOCUS_KEYPHRASE, true );
 		}
 
 		return $seo;
@@ -121,7 +130,7 @@ final class Seo {
 	 * Writes the SEO values of a post.
 	 *
 	 * @param int                  $post_id Post ID.
-	 * @param array<string, mixed> $seo     `title`, `description` and, with Yoast SEO, `noindex`.
+	 * @param array<string, mixed> $seo     `title`, `description` and, with Yoast SEO, `noindex` and `focus_keyphrase`.
 	 * @return bool Whether a provider took the values.
 	 */
 	public static function write( int $post_id, array $seo ): bool {
@@ -142,6 +151,16 @@ final class Seo {
 				update_post_meta( $post_id, self::YOAST_NOINDEX, '1' );
 			} else {
 				delete_post_meta( $post_id, self::YOAST_NOINDEX );
+			}
+		}
+
+		if ( 'yoast' === self::provider() && isset( $seo['focus_keyphrase'] ) ) {
+			$keyphrase = sanitize_text_field( (string) $seo['focus_keyphrase'] );
+
+			if ( '' === $keyphrase ) {
+				delete_post_meta( $post_id, self::YOAST_FOCUS_KEYPHRASE );
+			} else {
+				update_post_meta( $post_id, self::YOAST_FOCUS_KEYPHRASE, $keyphrase );
 			}
 		}
 
